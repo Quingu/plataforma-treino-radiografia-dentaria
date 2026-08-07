@@ -197,4 +197,3 @@ Aplicação local: `http://localhost:5173`
 
 Projeto acadêmico (PFC). Todos os direitos reservados aos autores.
 
-Plataforma-radigrafia-123
