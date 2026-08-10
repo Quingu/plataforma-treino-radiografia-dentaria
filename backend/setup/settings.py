@@ -34,7 +34,9 @@ INSTALLED_APPS = [
     
     # Nossos apps e bibliotecas:
     'rest_framework',
+    'rest_framework_simplejwt',
     'users',
+    'radiografias',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +134,21 @@ AUTH_USER_MODEL = 'users.Usuario'
 
 # Tipo padrão de chave primária para os modelos
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REST_FRAMEWORK = {
+    # Autenticação padrão via JWT
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    # Proteção contra Força Bruta (Rate Limit) global
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/min',   # Navegação geral para usuários não logados (20 req/min)
+        'user': '100/min',  # Navegação geral para usuários logados (100 req/min)
+        'login_brute_force': '3/min', # Trava de segurança para rotas sensíveis (3 req/min)
+    }
+}

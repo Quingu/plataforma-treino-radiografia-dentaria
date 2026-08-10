@@ -15,7 +15,7 @@ class TesteDeAutenticacaoJWT:
             nome='Aluno Login',
             perfil='aluno'
         )
-        self.url_token = reverse('token_obtain_pair')
+        self.url_token = reverse('obter-token-de-login')
 
     def test_deve_gerar_tokens_jwt_com_credenciais_validas(self):
         dados = {

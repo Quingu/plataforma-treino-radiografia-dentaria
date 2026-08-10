@@ -8,8 +8,7 @@ class TesteUsuarioAPIView:
     def setup_method(self):
         self.cliente = APIClient()
 
-        # Definiremos a URL com o nome usuario-registro no arquivo de rotas
-        self.url_registro = reverse('usuario-registro')
+        self.url_registro = reverse('registro-de-usuario')
 
     def test_deve_cadastrar_novo_usuario_com_sucesso(self):
         dados = {
