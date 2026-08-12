@@ -22,3 +22,6 @@ dist-ssr/
 .vscode/
 .idea/
 .DS_Store
+
+# Banco de Dados SQLite Local
+db.sqlite3

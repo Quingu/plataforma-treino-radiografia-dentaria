@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    # Proteção contra Força Bruta (Rate Limit) global
+    # Proteção contra Força Bruta (Rate Limit)
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
@@ -152,3 +152,7 @@ REST_FRAMEWORK = {
         'login_brute_force': '3/min', # Trava de segurança para rotas sensíveis (3 req/min)
     }
 }
+
+# Configuração de arquivos de mídia (Local)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
