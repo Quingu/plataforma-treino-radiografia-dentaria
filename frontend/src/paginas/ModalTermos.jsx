@@ -2,18 +2,16 @@ import React from 'react';
 
 export default function ModalTermos({ aoFechar }) {
   return (
-    /* Fundo escuro semitransparente que cobre a tela toda */
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm select-none">
+
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm select-none animate-fade-in">
       
-      {/* Container do Modal */}
       <div className="bg-[#101927] border border-slate-700/80 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
         
-        {/* Cabeçalho do Modal */}
+        {/*CABEÇALHO DO MODAL*/}
         <div className="flex items-center justify-between p-6 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">📜</span>
-            <h2 className="text-xl font-bold text-white tracking-tight">Termos, Privacidade & Cookies</h2>
-          </div>
+          
+          <h2 className="text-xl font-bold text-white tracking-tight">Termos, Privacidade & Cookies</h2>
+          
           <button 
             onClick={aoFechar}
             className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
@@ -25,8 +23,8 @@ export default function ModalTermos({ aoFechar }) {
           </button>
         </div>
 
-        {/* Conteúdo com scroll (Rolagem) */}
-        <div className="p-6 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed">
+        {/*CONTEÚDO DO MODAL*/}
+        <div className="p-6 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed custom-scrollbar">
           
           <p className="text-slate-400 italic">
             Última atualização: Agosto de 2026<br/>
@@ -75,7 +73,7 @@ export default function ModalTermos({ aoFechar }) {
 
         </div>
 
-        {/* Rodapé do Modal */}
+        {/*RODAPÉ DO MODAL*/}
         <div className="p-5 border-t border-slate-800 flex justify-end bg-[#0d131d] rounded-b-2xl">
           <button 
             onClick={aoFechar}

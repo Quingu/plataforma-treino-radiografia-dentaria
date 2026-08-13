@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 
 export default function ModalEsqueceuSenha({ aoFechar }) {
-  // Etapas: 'solicitar_email' -> 'digitar_codigo' -> 'nova_senha' -> 'sucesso'
-  const [etapa, setEtapa] = useState('solicitar_email');
   
+  /*Dados do usuario para redefinir a senha */
+
+  const [etapa, setEtapa] = useState('solicitar_email');
   const [email, setEmail] = useState('');
   const [codigoDigitado, setCodigoDigitado] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [erro, setErro] = useState('');
 
-  // 1. Enviar o código para o e-mail
+  /* FUNÇÕES DE NAVEGAÇÃO E VALIDAÇÃO*/
   const lidarComEnvioEmail = (e) => {
     e.preventDefault();
     setErro('');
@@ -19,14 +20,10 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
       return;
     }
 
-    // Aqui entraria a chamada para o backend (ex: POST /api/esqueci-senha)
     console.log('Código de recuperação enviado para:', email);
-    
-    // Avança para a etapa de digitar o código recebido
     setEtapa('digitar_codigo');
   };
 
-  // 2. Validar o código digitado
   const lidarComValidarCodigo = (e) => {
     e.preventDefault();
     setErro('');
@@ -36,11 +33,9 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
       return;
     }
 
-    // Avança para definir a nova senha
     setEtapa('nova_senha');
   };
 
-  // 3. Salvar a nova senha
   const lidarComSalvarSenha = (e) => {
     e.preventDefault();
     setErro('');
@@ -50,7 +45,6 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
       return;
     }
 
-    // Aqui entraria a chamada para o backend atualizar a senha
     console.log('Senha redefinida com sucesso para o e-mail:', email);
     
     setEtapa('sucesso');
@@ -60,15 +54,18 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 select-none animate-fade-in">
       <div className="bg-[#141d2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
         
-        {/* Botão de Fechar */}
+        {/*Fechar Modal */}
         <button 
           onClick={aoFechar}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+          title="Fechar"
         >
-          ✕
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
 
-        {/* ETAPA 1: Solicitar E-mail */}
+        {/*SOLICITAR E-MAIL*/}
         {etapa === 'solicitar_email' && (
           <>
             <div className="space-y-2">
@@ -79,12 +76,12 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
             </div>
 
             {erro && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs flex items-center justify-center">
                 {erro}
               </div>
             )}
 
-            <form onSubmit={lidarComEnvioEmail} className="space-y-4">
+            <form onSubmit={lidarComEnvioEmail} className="space-y-4" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                   E-mail de Acesso
@@ -108,12 +105,14 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </>
         )}
 
-        {/* ETAPA 2: Digitar o Código */}
+        {/*DIGITAR O CÓDIGO*/}
         {etapa === 'digitar_codigo' && (
           <>
             <div className="space-y-2">
-              <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center text-xl mb-4">
-                📩
+              <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center mb-4 text-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
               </div>
               <h3 className="text-xl font-bold text-white">Verifique seu e-mail</h3>
               <p className="text-slate-400 text-xs leading-relaxed">
@@ -122,12 +121,12 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
             </div>
 
             {erro && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs flex items-center justify-center">
                 {erro}
               </div>
             )}
 
-            <form onSubmit={lidarComValidarCodigo} className="space-y-4">
+            <form onSubmit={lidarComValidarCodigo} className="space-y-4" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                   Código de Verificação
@@ -137,7 +136,7 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
                   maxLength={6}
                   placeholder="123456"
                   value={codigoDigitado}
-                  onChange={(e) => setCodigoDigitado(e.target.value)}
+                  onChange={(e) => setCodigoDigitado(e.target.value.replace(/\D/g, ''))} // Permite apenas números
                   className="w-full px-4 py-3.5 bg-[#0d131d] border border-slate-700/80 rounded-xl text-white text-center tracking-widest text-lg font-mono placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-all"
                 />
               </div>
@@ -152,12 +151,14 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </>
         )}
 
-        {/* ETAPA 3: Nova Senha */}
+        {/*NOVA SENHA*/}
         {etapa === 'nova_senha' && (
           <>
             <div className="space-y-2">
-              <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center text-xl mb-4">
-                🔒
+              <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center mb-4 text-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
               </div>
               <h3 className="text-xl font-bold text-white">Criar Nova Senha</h3>
               <p className="text-slate-400 text-xs leading-relaxed">
@@ -166,12 +167,12 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
             </div>
 
             {erro && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs flex items-center justify-center">
                 {erro}
               </div>
             )}
 
-            <form onSubmit={lidarComSalvarSenha} className="space-y-4">
+            <form onSubmit={lidarComSalvarSenha} className="space-y-4" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                   Nova Senha (mín. 6 caracteres)
@@ -195,14 +196,16 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </>
         )}
 
-        {/* ETAPA 4: Sucesso Final */}
+        {/*SUCESSO FINAL*/}
         {etapa === 'sucesso' && (
           <div className="text-center space-y-4 py-4">
-            <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center text-3xl mx-auto text-emerald-400">
-              ✓
+            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
             </div>
             <h3 className="text-xl font-bold text-white">Senha alterada com sucesso!</h3>
-            <p className="text-slate-300 text-xs leading-relaxed">
+            <p className="text-slate-300 text-xs leading-relaxed px-4">
               Sua senha foi redefinida. Agora você já pode entrar na plataforma utilizando suas novas credenciais.
             </p>
             <button 

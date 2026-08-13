@@ -3,26 +3,19 @@ import ModalEsqueceuSenha from './ModalEsqueceuSenha';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   
-  /* ==========================================================================
-     1. ESTADOS DO COMPONENTE
-     ========================================================================== */
+ // Tela de Login e recuperar senha 
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
-
-  // Estado para controlar a abertura do modal de "Esqueceu a senha"
   const [modalEsqueceuAberto, setModalEsqueceuAberto] = useState(false);
-
-
-  /* ==========================================================================
-     2. LÓGICA E VALIDAÇÃO PERSONALIZADA
-     ========================================================================== */
+ 
+  //Obriga a preencher os campos
   const enviarFormulario = (evento) => {
     evento.preventDefault();
-    setErro('');
+    setErro(''); 
 
-    // Validação de preenchimento obrigatório
     if (!email.trim()) {
       setErro('Por favor, insira o seu e-mail.');
       return;
@@ -33,23 +26,19 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       return;
     }
 
-    // Validação de formato de e-mail
     if (!email.includes('@') || !email.includes('.')) {
       setErro('Por favor, insira um e-mail válido.');
       return;
     }
 
-    // Se passou pelas validações, envia os dados
     aoFazerLogin({ email, senha });
   };
-
-
   return (
     <div className="min-h-screen bg-[#0d131d] text-white grid grid-cols-1 lg:grid-cols-12 select-none">
       
-      {/* ===================================================================
-          3. COLUNA DA ESQUERDA: APRESENTAÇÃO
-          =================================================================== */}
+      {/*
+         Texto e apresentação do site
+      */}
       <div className="lg:col-span-7 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
@@ -77,9 +66,9 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       </div>
 
 
-      {/* ===================================================================
-          4. COLUNA DA DIREITA: FORMULÁRIO DE LOGIN
-          =================================================================== */}
+      {/*
+        Formulario de Login
+      */}
       <div className="lg:col-span-5 flex items-center justify-center p-8 lg:p-12 bg-[#0d131d]">
         <div className="w-full max-w-md space-y-8">
           
@@ -88,14 +77,13 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
             <p className="text-slate-400 text-sm">Insira seus dados abaixo para entrar no sistema</p>
           </div>
 
+          {/* Quando aperece erro */}
           {erro && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-3">
-              <span>⚠️</span>
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
             </div>
           )}
 
-          {/* noValidate evita o comportamento padrão do navegador */}
           <form onSubmit={enviarFormulario} noValidate className="space-y-5">
             
             <div>
@@ -120,6 +108,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                   className="w-full px-4 py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12"
                 />
                 
+                {/* Olhinho para revelar a senha */}
                 <button
                   type="button"
                   onClick={() => setMostrarSenha(!mostrarSenha)}
@@ -138,16 +127,16 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                   )}
                 </button>
               </div>
+            </div>
 
-              <div className="flex justify-end mt-2">
-                <button
-                  type="button"
-                  onClick={() => setModalEsqueceuAberto(true)}
-                  className="text-xs text-blue-400 hover:text-blue-300 hover:underline cursor-pointer transition-all font-medium"
-                >
-                  Esqueceu a senha?
-                </button>
-              </div>
+            <div className="flex justify-end mt-2">
+              <button
+                type="button"
+                onClick={() => setModalEsqueceuAberto(true)}
+                className="text-xs text-blue-400 hover:text-blue-300 hover:underline cursor-pointer transition-all font-medium"
+              >
+                Esqueceu a senha?
+              </button>
             </div>
 
             <button
@@ -170,7 +159,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
         </div>
       </div>
 
-      {/* Modal de Recuperação de Senha */}
+      {/* Esqueci senha */}
       {modalEsqueceuAberto && (
         <ModalEsqueceuSenha aoFechar={() => setModalEsqueceuAberto(false)} />
       )}

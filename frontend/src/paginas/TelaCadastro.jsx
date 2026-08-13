@@ -3,9 +3,8 @@ import ModalTermos from './ModalTermos';
 
 export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro }) {
   
-  /* ==========================================================================
-     1. ESTADOS DO COMPONENTE
-     ========================================================================== */
+  /*Preenche os campos de cadastro, validação e envio para o backend*/
+
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -21,9 +20,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
   const [modalAberto, setModalAberto] = useState(false);
 
 
-  /* ==========================================================================
-     2. LÓGICA DE VALIDAÇÃO PERSONALIZADA
-     ========================================================================== */
+  /*Validar e Cadastro*/
   const validarEEnviar = (evento) => {
     evento.preventDefault();
     setErro('');
@@ -63,7 +60,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    // Envia os dados caso tudo esteja correto
     aoConcluirCadastro({
       tipoUsuario,
       nomeCompleto,
@@ -76,14 +72,14 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
   return (
     <div className="min-h-screen bg-[#0d131d] text-white grid grid-cols-1 lg:grid-cols-12 select-none">
       
-      {/* ===================================================================
-         3. COLUNA DA ESQUERDA: Branding
-         =================================================================== */}
+      {/*
+      Apresentação do site esquerdo
+      */}
       <div className="lg:col-span-6 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-600/20 border border-blue-500/30 rounded-2xl">
-            <span className="text-3xl">🦷</span>
+          <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-2xl flex items-center justify-center">
+            <span className="font-black text-blue-500 text-xl">RD</span>
           </div>
           <div>
             <h1 className="text-2xl font-black text-blue-500 tracking-tight">RadioDent</h1>
@@ -106,9 +102,9 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       </div>
 
 
-      {/* ===================================================================
-         4. COLUNA DA DIREITA: Formulário
-         =================================================================== */}
+      {/*
+        Cadastro 
+      */}
       <div className="lg:col-span-6 flex items-center justify-center p-8 lg:p-12 bg-[#0d131d]">
         <div className="w-full max-w-md space-y-6">
           
@@ -117,15 +113,14 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
             <p className="text-slate-400 text-sm">Escolha seu perfil e preencha os dados abaixo</p>
           </div>
 
-          {/* Área de Erro Estilizada */}
+          {/* Alerta de erro*/}
           {erro && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-medium flex items-center gap-3 animate-shake">
-              <span className="text-base">⚠️</span>
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
             </div>
           )}
 
-          {/* Seleção de tipo de usuário */}
+          {/*Aluno / Professor*/}
           <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
             <button
               type="button"
@@ -145,13 +140,13 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
 
           <form onSubmit={validarEEnviar} className="space-y-4" noValidate>
             
-            {/* Campo Nome */}
+            {/* Nome Completo */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nome Completo</label>
               <input type="text" placeholder="Ex: Gabriel Silva" value={nomeCompleto} onChange={(e) => setNomeCompleto(e.target.value)} className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
             </div>
 
-            {/* Campo E-mail */}
+            {/* E-mail */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 {tipoUsuario === 'professor' ? 'E-mail Institucional' : 'E-mail'}
@@ -162,9 +157,10 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
               )}
             </div>
 
-            {/* Senhas com Olhinho */}
+            {/*Senha */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Senha */}
+              
+              {/* confirmação a senha */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Senha</label>
                 <div className="relative">
@@ -175,6 +171,8 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                     onChange={(e) => setSenha(e.target.value)} 
                     className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12" 
                   />
+                  
+                  {/* Olhinho para ver a senha */}
                   <button
                     type="button"
                     onClick={() => setMostrarSenha(!mostrarSenha)}
@@ -195,7 +193,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                 </div>
               </div>
 
-              {/* Confirmar Senha */}
+              {/* Confirma de Senha */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Confirmar</label>
                 <div className="relative">
@@ -206,6 +204,8 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                     onChange={(e) => setConfirmarSenha(e.target.value)} 
                     className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12" 
                   />
+                  
+                  {/* olhinho de ver senha */}
                   <button
                     type="button"
                     onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
@@ -227,7 +227,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
               </div>
             </div>
 
-            {/* Bloco de aceite unificado */}
+            {/* Checkbox de Termos */}
             <div className="flex items-start gap-3 pt-2">
               <input type="checkbox" id="aceitouTermos" checked={aceitouTermos} onChange={(e) => setAceitouTermos(e.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-700 bg-[#141d2b] text-blue-600 focus:ring-blue-500 cursor-pointer" />
               <label htmlFor="aceitouTermos" className="text-xs text-slate-400 leading-relaxed cursor-pointer select-none">
@@ -250,6 +250,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
         </div>
       </div>
 
+      {/* Termos */}
       {modalAberto && (
         <ModalTermos aoFechar={() => setModalAberto(false)} />
       )}
