@@ -20,7 +20,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-o2z!_80b8x&^cw-0r+#5z+me=(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# Permite todos os hosts para rodar no Render 
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -31,8 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     
-    # Nossos apps e bibliotecas:
     'rest_framework',
     'rest_framework_simplejwt',
     'users',
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -118,8 +120,10 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# Static files 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email
 MAILERS = {
@@ -147,9 +151,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '20/min',   # Navegação geral para usuários não logados (20 req/min)
-        'user': '100/min',  # Navegação geral para usuários logados (100 req/min)
-        'login_brute_force': '3/min', # Trava de segurança para rotas sensíveis (3 req/min)
+        'anon': '20/min',  
+        'user': '100/min',  
+        'login_brute_force': '3/min',
     }
 }
 
