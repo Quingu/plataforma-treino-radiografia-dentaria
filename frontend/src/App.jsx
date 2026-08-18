@@ -1,38 +1,48 @@
 import React, { useState } from 'react';
 import TelaLogin from './paginas/TelaLogin';
 import TelaCadastro from './paginas/TelaCadastro';
+import HomeProfessor from './paginas/HomeProfessor';
 
 export default function App() {
-  // Estado para controlar qual tela está ativa: 'login' ou 'cadastro'
-  const [telaAtual, setTelaAtual] = useState('login');
+  // Telas possíveis: 'LOGIN' | 'CADASTRO' | 'HOME'
+  const [telaAtual, setTelaAtual] = useState('LOGIN');
+  const [usuario, setUsuario] = useState(null);
 
-  // Função para tratar quando o usuário tentar fazer login
-  const lidarComLogin = (dadosLogin) => {
-    console.log("Tentando logar com:", dadosLogin);
-    // Aqui no futuro faremos a chamada para a sua API / Backend
+  // Executado após passar do e-mail/senha + 2FA no TelaLogin
+  const handleLoginSucesso = (dadosLogin) => {
+    // Define o tipo de usuário (por padrão professor para testes)
+    setUsuario({
+      email: dadosLogin.email,
+      tipoUsuario: 'professor'
+    });
+    setTelaAtual('HOME');
   };
 
-  // Função para tratar quando o cadastro for concluído
-  const lidarComCadastro = (dadosCadastro) => {
-    console.log("Cadastro realizado com sucesso:", dadosCadastro);
-    alert(`Conta de ${dadosCadastro.tipoUsuario} criada com sucesso! Faça login para continuar.`);
-    setTelaAtual('login'); // Volta automaticamente para a tela de login
+  const handleCadastroSucesso = (dadosUsuario) => {
+    setUsuario(dadosUsuario);
+    setTelaAtual('HOME');
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#0d131d]">
-      {/* Renders condicionais dependendo da tela ativa */}
-      {telaAtual === 'login' && (
+    <div className="min-h-screen bg-[#0d131d] text-white">
+      {telaAtual === 'LOGIN' && (
         <TelaLogin
-          aoNavegarParaCadastro={() => setTelaAtual('cadastro')}
-          aoFazerLogin={lidarComLogin}
+          aoNavegarParaCadastro={() => setTelaAtual('CADASTRO')}
+          aoFazerLogin={handleLoginSucesso}
         />
       )}
 
-      {telaAtual === 'cadastro' && (
+      {telaAtual === 'CADASTRO' && (
         <TelaCadastro
-          aoNavegarParaLogin={() => setTelaAtual('login')}
-          aoConcluirCadastro={lidarComCadastro}
+          aoNavegarParaLogin={() => setTelaAtual('LOGIN')}
+          aoConcluirCadastro={handleCadastroSucesso}
+        />
+      )}
+
+      {telaAtual === 'HOME' && (
+        <HomeProfessor
+          usuario={usuario}
+          aoSair={() => setTelaAtual('LOGIN')}
         />
       )}
     </div>
