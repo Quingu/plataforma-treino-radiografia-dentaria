@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.mail import send_mail
 from django.conf import settings
 from users.models import Usuario, TokenDeRecuperacao
 from users.seguranca.limitadores import BloqueioDeForcaBruta
@@ -9,6 +8,7 @@ from users.serializers.recuperacao_serializers import (
     SerializadorSolicitacaoRecuperacao, 
     SerializadorRedefinicaoSenha
 )
+from users.services.brevo_service import enviar_email_brevo
 
 class VisaoSolicitarRecuperacaoSenha(APIView):
     classes_de_limitacao = [BloqueioDeForcaBruta]
@@ -30,14 +30,21 @@ class VisaoSolicitarRecuperacaoSenha(APIView):
                 # Monta a URL que o frontend vai processar
                 link_recuperacao = f"https://seu-frontend.com/recuperar-senha?token={novo_token.token}"
                 
-                # Envio do e-mail
-                send_mail(
-                    subject='Recuperação de Senha - Plataforma de Radiografia',
-                    message=f'Você solicitou a recuperação de senha.\n\nAcesse o link abaixo para redefinir sua senha. Este link expira em 15 minutos:\n\n{link_recuperacao}',
-                    from_email=settings.DEFAULT_FROM_EMAIL, # O email configurado no settings.py
-                    recipient_list=[email],
-                    fail_silently=False, # Em produção, se o servidor SMTP cair, isso gera um log de erro útil
-                )
+                # Assunto do e-mail em HTML para a Brevo
+                assunto = "Recuperação de Senha - Plataforma de Radiografia"
+                html_conteudo = f"""
+                    <h2>Olá, {usuario.nome}</h2>
+                    <p>Você solicitou a recuperação de senha para a sua conta na plataforma de treino de radiografia.</p>
+                    <p>Acesse o link abaixo para redefinir sua senha. <b>Este link expira em 15 minutos:</b></p>
+                    <p><a href="{link_recuperacao}" target="_blank">Redefinir Minha Senha</a></p>
+                    <p>Se você não solicitou isso, ignore este e-mail.</p>
+                """
+                
+                # envio do e-mail via API da Brevo
+                sucesso, resposta = enviar_email_brevo(usuario.email, usuario.nome, assunto, html_conteudo)
+                
+                if not sucesso:
+                    pass
                 
             except Usuario.DoesNotExist:
                 pass
@@ -53,7 +60,7 @@ class VisaoSolicitarRecuperacaoSenha(APIView):
 class VisaoRedefinirSenha(APIView):
     classes_de_limitacao = [BloqueioDeForcaBruta]
 
-    def get_throttles(self): # prepara uma lista de limitadores que vão controlar o acesso a uma parte do sistema
+    def get_throttles(self):
         return [limitador() for limitador in self.classes_de_limitacao]
 
     def post(self, requisicao):
