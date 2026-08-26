@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
     'users',
     'radiografias',
     'academico',
@@ -161,3 +162,9 @@ REST_FRAMEWORK = {
 # Configuração de arquivos de mídia (Local)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+#coisa para o email
+
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@radiodent.com")

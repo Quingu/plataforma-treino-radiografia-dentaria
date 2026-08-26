@@ -12,7 +12,6 @@ class TesteRecuperacaoDeSenha:
     def setup_method(self):
         self.cliente = APIClient()
         
-        # Cria um usuário padrão para os testes
         self.usuario = Usuario.objects.create_user(
             email='aluno.esquecido@email.com',
             password='SenhaAntiga123!',
