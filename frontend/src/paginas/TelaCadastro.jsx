@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import ModalTermos from './ModalTermos'; 
 import { validarEmailPorPerfil } from '../utils/validacao';
 
-// URL base da API
+// Endereço base da API backend (com fallback local)
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro }) {
   
-  /* Controle da etapa: 1 = Cadastro | 2 = Autenticação 2FA */
+  // Controle do fluxo: 1 = Formulário de dados | 2 = Código 2FA
   const [etapa, setEtapa] = useState(1);
 
-  /* Preenche os campos de cadastro, validação e envio para o backend */
+  // Dados do formulário de cadastro
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -24,12 +24,12 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
-  /* Estado para o Código 2FA */
+  // Código digitado na etapa de segurança
   const [codigo2FA, setCodigo2FA] = useState('');
 
   const [modalAberto, setModalAberto] = useState(false);
 
-  /* Validar e Avançar para Etapa 2 (Envio do Cadastro) */
+  // Valida o formulário e envia os dados para liberar o 2FA
   const validarEAvancar2FA = async (evento) => {
     evento.preventDefault();
     setErro('');
@@ -39,7 +39,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    /* Validação dinâmica do e-mail por perfil utilizando a utils */
+    // Regras de e-mail específicas para aluno ou professor
     const erroEmail = validarEmailPorPerfil(email, tipoUsuario);
     if (erroEmail) {
       setErro(erroEmail);
@@ -51,8 +51,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    /* REQUISITO RN-05: Validação da Senha Segura */
-    // Exige: no mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial
+    // Exige: mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial
     const regexSenhaForte = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
     
     if (!regexSenhaForte.test(senha)) {
@@ -78,39 +77,34 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
     setCarregando(true);
 
     try {
-      /* Chamada Fetch para a API do Django:
-        const resposta = await fetch(`${API_URL}/usuarios/cadastro/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            tipo_usuario: tipoUsuario,
-            nome_completo: nomeCompleto,
-            email: email,
-            senha: senha,
-            aceitou_termos: aceitouTermos
-          })
-        });
+      const resposta = await fetch(`${API_URL}/usuarios/cadastro/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo_usuario: tipoUsuario,
+          nome_completo: nomeCompleto,
+          email: email,
+          senha: senha,
+          aceitou_termos: aceitouTermos
+        })
+      });
 
-        const dados = await resposta.json();
+      const dados = await resposta.json();
 
-        if (!resposta.ok) {
-          throw new Error(dados.mensagem || 'Falha ao realizar cadastro.');
-        }
-      */
+      if (!resposta.ok) {
+        throw new Error(dados.mensagem || 'Não foi possível cadastrar a conta.');
+      }
 
-      // Simulação de delay de rede (remover quando o backend estiver ativo)
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Avança para a tela do 2FA
+      // verificação do codigo autheiticador
       setEtapa(2);
     } catch (err) {
-      setErro(err.message || 'Erro ao conectar ao servidor. Tente novamente.');
+      setErro(err.message || 'Erro de conexão com o servidor. Tente novamente.');
     } finally {
       setCarregando(false);
     }
   };
 
-  /* Validar Código 2FA e Concluir Cadastro */
+  // Confirmação do código enviado por e-mail 
   const validarEConcluirCadastro = async (evento) => {
     evento.preventDefault();
     setErro('');
@@ -123,50 +117,56 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
     setCarregando(true);
 
     try {
-      /* Chamada Fetch para validação do 2FA:
-        const resposta = await fetch(`${API_URL}/usuarios/validar-2fa/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email,
-            codigo_2fa: codigo2FA
-          })
-        });
+      const resposta = await fetch(`${API_URL}/usuarios/validar-2fa/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          codigo_2fa: codigo2FA
+        })
+      });
 
-        const dados = await resposta.json();
+      const dados = await resposta.json();
 
-        if (!resposta.ok) {
-          throw new Error(dados.mensagem || 'Código de verificação inválido.');
-        }
-      */
+      if (!resposta.ok) {
+        throw new Error(dados.mensagem || 'Código de verificação incorreto.');
+      }
 
-      // Simulação de delay de rede
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // Envia os dados e conclui o fluxo
       aoConcluirCadastro({
         tipoUsuario,
         nomeCompleto,
         email,
         senha,
-        codigo2FA
+        codigo2FA,
+        ...dados
       });
     } catch (err) {
-      setErro(err.message || 'Código incorreto ou expirado. Verifique e tente novamente.');
+      setErro(err.message || 'Código incorreto ou expirado. Tente novamente.');
     } finally {
       setCarregando(false);
     }
   };
 
-  /* Reenviar Código 2FA */
+  // Reenvia o código de segurança para o e-mail do usuário
   const handleReenviarCodigo = async () => {
     setErro('');
     setCarregando(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const resposta = await fetch(`${API_URL}/usuarios/reenviar-2fa/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(dados.mensagem || 'Não foi possível reenviar o código.');
+      }
+
       alert("Novo código enviado com sucesso para o seu e-mail!");
     } catch (err) {
-      setErro("Não foi possível reenviar o código. Tente novamente.");
+      setErro(err.message || "Não foi possível reenviar o código. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -224,7 +224,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
             </p>
           </div>
 
-          {/* Alerta de erro */}
+          {/* Mensagem de Erro */}
           {erro && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
@@ -232,9 +232,8 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
           )}
 
           {etapa === 1 ? (
-            /* --- ETAPA 1: CADASTRO --- */
             <>
-              {/* Seleção Aluno / Professor */}
+              {/* Seleção do Perfil (Aluno / Professor) */}
               <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
                 <button
                   type="button"
@@ -328,7 +327,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   </div>
                 </div>
 
-                {/* Checkbox Termos */}
+                {/* Aceite dos Termos */}
                 <div className="flex items-start gap-3 pt-2">
                   <input type="checkbox" id="aceitouTermos" checked={aceitouTermos} onChange={(e) => setAceitouTermos(e.target.checked)} disabled={carregando} className="mt-1 h-4 w-4 rounded border-slate-700 bg-[#141d2b] text-blue-600 focus:ring-blue-500 cursor-pointer" />
                   <label htmlFor="aceitouTermos" className="text-xs text-slate-400 leading-relaxed cursor-pointer select-none">
@@ -339,7 +338,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   </label>
                 </div>
 
-                {/* Botão de Envio com Spinner */}
+                {/* Botão de Envio */}
                 <button 
                   type="submit" 
                   disabled={!aceitouTermos || carregando} 
@@ -361,7 +360,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
               </form>
             </>
           ) : (
-            /* --- ETAPA 2: DIGITAR CÓDIGO 2FA --- */
+            /* DIGITAR CÓDIGO 2FA --- */
             <form onSubmit={validarEConcluirCadastro} className="space-y-5" noValidate>
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
@@ -425,7 +424,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
         </div>
       </div>
 
-      {/* Termos */}
+      {/* Modal de Termos e Condições */}
       {modalAberto && (
         <ModalTermos aoFechar={() => setModalAberto(false)} />
       )}

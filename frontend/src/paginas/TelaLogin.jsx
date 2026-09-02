@@ -3,21 +3,19 @@ import ModalEsqueceuSenha from './ModalEsqueceuSenha';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   
-  // Controle de etapas: 1 = Login (E-mail e Senha) | 2 = 2FA (Código de 6 dígitos)
+  // Login (E-mail e Senha)e 2FA 
   const [etapa, setEtapa] = useState(1);
 
-  // Estados dos campos
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   
-  // Estado do 2FA
   const [codigo2FA, setCodigo2FA] = useState('');
 
   const [erro, setErro] = useState('');
   const [modalEsqueceuAberto, setModalEsqueceuAberto] = useState(false);
 
-  // Etapa 1: Valida E-mail e Senha e avança para o 2FA
+  // validação do email e senha
   const enviarFormulario = (evento) => {
     evento.preventDefault();
     setErro(''); 
@@ -37,18 +35,17 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       return;
     }
 
-    // Validação da política de senha (mínimo 8 caracteres com maiúscula, número e símbolo)
+    // authenticação de senha forte
     const regexSenhaForte = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
     if (!regexSenhaForte.test(senha)) {
       setErro('Senha inválida. A senha cadastrada deve conter no mínimo 8 caracteres, incluindo letra maiúscula, número e caractere especial.');
       return;
     }
 
-    // Avança para a tela do código 2FA
     setEtapa(2);
   };
 
-  // Etapa 2: Valida o código 2FA de 6 dígitos e conclui o login
+  // validação da etapa 2FA
   const confirmar2FA = (evento) => {
     evento.preventDefault();
     setErro('');
@@ -58,7 +55,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       return;
     }
 
-    // Conclui o login enviando e-mail, senha e o código 2FA
     aoFazerLogin({ email, senha, codigo2FA });
   };
 
@@ -114,7 +110,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
             </p>
           </div>
 
-          {/* Quando aparece erro */}
+          {/* Quando aparece o erro */}
           {erro && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
@@ -147,7 +143,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                     className="w-full px-4 py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12"
                   />
                   
-                  {/* Olhinho para revelar a senha */}
+                  {/* olho de ver a senha */}
                   <button
                     type="button"
                     onClick={() => setMostrarSenha(!mostrarSenha)}
