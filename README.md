@@ -8,6 +8,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Relational-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![AWS S3](https://img.shields.io/badge/AWS_S3-Storage-569A31?style=flat-square&logo=amazon-s3&logoColor=white)
+![Brevo](https://img.shields.io/badge/Brevo-0092FF?style=flat-square&logo=brevo&logoColor=white)
 
 Sistema educacional desenvolvido como Projeto Final de Curso (PFC) focado no treinamento e diagnóstico por imagens radiográficas odontológicas. O sistema conta com um backend em Django REST Framework e uma interface interativa em React, focada em marcações de coordenadas clínicas e validações seguras.
 
