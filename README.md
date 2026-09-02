@@ -28,23 +28,24 @@ plataforma-treino-radiografia-dentaria/
 |-- .gitignore
 |-- backend/
 |   |-- manage.py
+|   |-- build.sh
+|   |-- pytest.ini
 |   |-- requirements.txt
 |   |-- .env.example
 |   |-- setup/
 |   |-- users/
-|   |-- core/
-|   `-- api/
+|   |-- radiografias/
+|   `-- academico/
 `-- frontend/
     |-- index.html
+    |-- .gitignore
+    |-- .oxlintrc.json
+    |-- package-lock.json
     |-- package.json
     |-- vite.config.js
     |-- tailwind.config.js
     |-- src/
-    |   |-- assets/
-    |   |-- components/
-    |   |-- pages/
-    |   |-- services/
-    |   `-- main.jsx
+    |-- public/
 
 ```
 ## Arquitetura
@@ -109,7 +110,7 @@ Backend Django REST Framework
 
 As entidades de domínio mapeadas no banco relacional são:
 
-- `CustomUser`: Diferencia alunos de professores (`ehaluno`, `ehprofessor`).
+- `CustomUser`: Diferencia alunos de professores (`eh_aluno`, `eh_professor`).
 - `Turma`: Armazena o código alfanumérico e a relação N:N com os usuários.
 - `Radiografia`: Metadados da imagem clínica e URL de referência no S3.
 - `Tarefa`: Relaciona uma Radiografia a uma Turma, contendo o gabarito espacial (`x_min, x_max, y_min, y_max`).
