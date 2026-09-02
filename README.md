@@ -109,7 +109,7 @@ Backend Django REST Framework
 
 As entidades de domínio mapeadas no banco relacional são:
 
-- `CustomUser`: Diferencia alunos de professores (`is_student`, `is_professor`).
+- `CustomUser`: Diferencia alunos de professores (`ehaluno`, `ehprofessor`).
 - `Turma`: Armazena o código alfanumérico e a relação N:N com os usuários.
 - `Radiografia`: Metadados da imagem clínica e URL de referência no S3.
 - `Tarefa`: Relaciona uma Radiografia a uma Turma, contendo o gabarito espacial (`x_min, x_max, y_min, y_max`).
@@ -118,7 +118,7 @@ As entidades de domínio mapeadas no banco relacional são:
 ### Segurança
 
 O backend implementa o paradigma de *Zero Trust*:
-- O token JWT nunca é retornado no *body* da requisição, sendo blindado pelo navegador contra ataques XSS (via `HttpOnly`).
+- O token JWT nunca é retornado no *body* da requisição, sendo protegido pelo navegador contra ataques XSS (via `HttpOnly`).
 - O Front-end não possui a lógica matemática de correção; a validação de sobreposição de coordenadas ocorre exclusivamente no Back-end.
 - Proteção nativa do Django contra injeção de SQL e CSRF.
 - *Role-Based Access Control* (RBAC) via permissões customizadas do DRF (ex: `IsProfessor`, `IsStudent`).
