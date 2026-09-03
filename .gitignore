@@ -25,3 +25,5 @@ dist-ssr/
 
 # Banco de Dados SQLite Local
 db.sqlite3
+
+venv/
