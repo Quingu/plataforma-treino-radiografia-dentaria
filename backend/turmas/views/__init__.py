@@ -1,0 +1,1 @@
+from .turma_view import TurmaViewSet

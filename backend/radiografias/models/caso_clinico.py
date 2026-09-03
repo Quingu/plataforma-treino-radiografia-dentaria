@@ -28,7 +28,7 @@ class CasoClinico(models.Model):
     professor = models.ForeignKey(
         Usuario, 
         on_delete=models.CASCADE, 
-        limit_choices_to={'perfil': 'professor'},
+        limit_choices_to={'perfil': 'Professor'},
         related_name='casos_enviados',
         verbose_name='Professor Responsável'
     )
