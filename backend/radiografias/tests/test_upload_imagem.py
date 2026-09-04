@@ -45,3 +45,25 @@ class TesteUploadCasoClinico:
         
         assert resposta.status_code == 403
         assert CasoClinico.objects.count() == 0
+
+
+
+    def teste_usuario_consegue_listar_e_detalhar_radiografias(self):
+        self.cliente.force_authenticate(user=self.aluno)
+        caso = CasoClinico.objects.create(
+            titulo="Cisto Radicular",
+            descricao="Analisar limites da lesão.",
+            regiao_anatomica="maxila",
+            imagem="radiografias/2026/09/teste.jpg",
+            professor=self.professor
+        )
+
+        resposta_lista = self.cliente.get(self.url)
+        assert resposta_lista.status_code == 200
+        assert len(resposta_lista.data) >= 1
+
+        # testa o detalhamento pelo id
+        url_detalhe = reverse('detalhe-radiografia', kwargs={'pk': caso.id})
+        resposta_detalhe = self.cliente.get(url_detalhe)
+        assert resposta_detalhe.status_code == 200
+        assert resposta_detalhe.data['titulo'] == "Cisto Radicular"

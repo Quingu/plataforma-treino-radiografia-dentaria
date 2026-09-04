@@ -7,7 +7,7 @@ import pyotp
 
 from users.serializers.seguranca_2fa_serializers import SerializadorVerificacao2FA
 
-class VisaoConfigurar2FA(APIView):
+class Configurar2FAView(APIView):
     permission_classes = [IsAuthenticated] 
 
     def post(self, requisicao):
@@ -29,7 +29,7 @@ class VisaoConfigurar2FA(APIView):
         })
 
 
-class VisaoVerificar2FA(APIView):
+class Verificar2FAView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, requisicao):
@@ -60,7 +60,7 @@ class VisaoVerificar2FA(APIView):
         )
 
 
-class VisaoConcluirLogin2FA(APIView):
+class ConcluirLogin2FAView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, requisicao):
         serializador = SerializadorVerificacao2FA(data=requisicao.data)

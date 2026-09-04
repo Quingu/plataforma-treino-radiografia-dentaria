@@ -10,7 +10,7 @@ from users.serializers.recuperacao_serializers import (
 )
 from users.services.brevo_service import enviar_email_brevo
 
-class VisaoSolicitarRecuperacaoSenha(APIView):
+class SolicitarRecuperacaoSenhaView(APIView):
     classes_de_limitacao = [BloqueioDeForcaBruta]
 
     def get_throttles(self):
@@ -57,7 +57,7 @@ class VisaoSolicitarRecuperacaoSenha(APIView):
         return Response(serializador.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class VisaoRedefinirSenha(APIView):
+class RedefinirSenhaView(APIView):
     classes_de_limitacao = [BloqueioDeForcaBruta]
 
     def get_throttles(self):

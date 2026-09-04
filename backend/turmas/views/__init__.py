@@ -1,1 +1,1 @@
-from .turma_view import TurmaViewSet
+from .turma_view import TurmaView

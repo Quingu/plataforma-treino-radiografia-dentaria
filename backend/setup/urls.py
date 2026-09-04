@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/auth/', include('users.rotas.api_urls')),
     path('api/radiografias/', include('radiografias.rotas.api_urls')),
     path('api/turmas/', include('turmas.urls')),
+    path('api/tarefas/', include('tarefas.rotas.api_urls')),
 
     # rotas do Swagger e Redoc
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

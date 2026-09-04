@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from turmas.models import Turma
 from turmas.serializers import TurmaSerializer
 
-class TurmaViewSet(viewsets.ModelViewSet):
+class TurmaView(viewsets.ModelViewSet):
     serializer_class = TurmaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
