@@ -8,6 +8,45 @@ function salvarTokens(dados) {
 function limparTokens() {
   localStorage.removeItem('radiodent_access');
   localStorage.removeItem('radiodent_refresh');
+  localStorage.removeItem('radiodent_usuario');
+  localStorage.removeItem('radiodent_2fa_pendente');
+}
+
+function salvarUsuario(usuario) {
+  localStorage.setItem('radiodent_usuario', JSON.stringify(usuario));
+}
+
+function buscarUsuarioSalvo() {
+  const usuario = localStorage.getItem('radiodent_usuario');
+  if (!usuario) return null;
+
+  try {
+    return JSON.parse(usuario);
+  } catch {
+    limparTokens();
+    return null;
+  }
+}
+
+function buscarToken() {
+  return localStorage.getItem('radiodent_access');
+}
+
+function temSessaoSalva() {
+  return Boolean(buscarToken() && buscarUsuarioSalvo());
+}
+
+function marcar2FAPendente(pendente) {
+  if (pendente) {
+    localStorage.setItem('radiodent_2fa_pendente', 'true');
+    return;
+  }
+
+  localStorage.removeItem('radiodent_2fa_pendente');
+}
+
+function tem2FAPendente() {
+  return localStorage.getItem('radiodent_2fa_pendente') === 'true';
 }
 
 async function lerResposta(resposta) {
@@ -29,13 +68,19 @@ async function lerResposta(resposta) {
 }
 
 async function requisicao(caminho, opcoes = {}) {
-  const resposta = await fetch(`${API_URL}${caminho}`, {
-    ...opcoes,
-    headers: {
-      'Content-Type': 'application/json',
-      ...opcoes.headers,
-    },
-  });
+  let resposta;
+
+  try {
+    resposta = await fetch(`${API_URL}${caminho}`, {
+      ...opcoes,
+      headers: {
+        'Content-Type': 'application/json',
+        ...opcoes.headers,
+      },
+    });
+  } catch {
+    throw new Error('Não foi possível conectar ao servidor. Tente novamente em instantes.');
+  }
 
   return lerResposta(resposta);
 }
@@ -83,6 +128,19 @@ export async function concluirLogin2FA({ codigo, tokenTemporario }) {
   return dados;
 }
 
+export async function configurar2FA() {
+  return requisicaoAutenticada('/auth/2fa/configurar/', {
+    method: 'POST',
+  });
+}
+
+export async function verificar2FA(codigo) {
+  return requisicaoAutenticada('/auth/2fa/verificar/', {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  });
+}
+
 export async function solicitarRecuperacaoSenha(email) {
   return requisicao('/auth/recuperar-senha/solicitar/', {
     method: 'POST',
@@ -100,4 +158,13 @@ export async function redefinirSenha({ token, novaPassword }) {
   });
 }
 
-export { API_URL, limparTokens, requisicaoAutenticada };
+export {
+  API_URL,
+  buscarUsuarioSalvo,
+  limparTokens,
+  marcar2FAPendente,
+  requisicaoAutenticada,
+  salvarUsuario,
+  tem2FAPendente,
+  temSessaoSalva,
+};

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ModalEsqueceuSenha from './ModalEsqueceuSenha';
+import LogoMarca from '../componentes/LogoMarca';
 import { concluirLogin2FA, loginUsuario } from '../services/api';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
@@ -48,6 +49,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
       aoFazerLogin({
         email,
+        requerConfiguracao2FA: true,
         ...dados,
       });
     } catch (err) {
@@ -92,9 +94,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       <div className="lg:col-span-7 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-2xl flex items-center justify-center">
-            <span className="font-black text-blue-500 text-xl">RD</span>
-          </div>
+          <LogoMarca />
           <div>
             <h1 className="text-2xl font-black text-blue-500 tracking-tight">RadioDent</h1>
             <p className="text-xs text-slate-400">Treino & Diagnóstico Radiográfico</p>

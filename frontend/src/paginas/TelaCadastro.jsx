@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import ModalTermos from './ModalTermos'; 
+import LogoMarca from '../componentes/LogoMarca';
 import { validarEmailPorPerfil } from '../utils/validacao';
-import { cadastrarUsuario } from '../services/api';
+import { cadastrarUsuario, loginUsuario } from '../services/api';
 
-export default function TelaCadastro({ aoNavegarParaLogin }) {
-  const [etapa, setEtapa] = useState(1);
-
+export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro }) {
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -68,28 +67,28 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
     setCarregando(true);
 
     try {
-      await cadastrarUsuario({
+      const usuarioCriado = await cadastrarUsuario({
         nome: nomeCompleto,
         email,
         password: senha,
         tipo: tipoUsuario,
       });
 
-      setEtapa(2);
+      const dadosLogin = await loginUsuario({ email, password: senha });
+
+      aoConcluirCadastro({
+        email,
+        tipoUsuario,
+        perfil: tipoUsuario,
+        requerConfiguracao2FA: true,
+        ...usuarioCriado,
+        ...dadosLogin,
+      });
     } catch (err) {
       setErro(err.message || 'Erro de conexão com o servidor. Tente novamente.');
     } finally {
       setCarregando(false);
     }
-  };
-
-  const validarEConcluirCadastro = async (evento) => {
-    evento.preventDefault();
-    aoNavegarParaLogin();
-  };
-
-  const mostrarAvisoLogin = () => {
-    setErro('O cadastro já foi criado. Faça login para continuar.');
   };
 
   return (
@@ -99,9 +98,7 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
       <div className="lg:col-span-6 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-2xl flex items-center justify-center">
-            <span className="font-black text-blue-500 text-xl">RD</span>
-          </div>
+          <LogoMarca />
           <div>
             <h1 className="text-2xl font-black text-blue-500 tracking-tight">RadioDent</h1>
             <p className="text-xs text-slate-400">Treino & Diagnóstico Radiográfico</p>
@@ -110,20 +107,13 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
 
         <div className="my-12 lg:my-0 space-y-6 max-w-lg">
           <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-semibold uppercase tracking-wider">
-            {etapa === 1 ? 'Crie sua Conta' : 'Cadastro Concluído'}
+            Crie sua Conta
           </span>
           <h2 className="text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
-            {etapa === 1 ? (
-              <>Junte-se à nossa <span className="text-blue-500">comunidade acadêmica</span>.</>
-            ) : (
-              <>Acesse sua <span className="text-blue-500">conta</span> para continuar.</>
-            )}
+            Junte-se à nossa <span className="text-blue-500">comunidade acadêmica</span>.
           </h2>
           <p className="text-slate-400 text-base leading-relaxed">
-            {etapa === 1 
-              ? 'Seja você aluno ou professor, o RadioDent oferece o ambiente ideal para simulações radiográficas.'
-              : `Cadastro criado para ${email || 'o e-mail informado'}. Agora faça login para entrar na plataforma.`
-            }
+            Seja você aluno ou professor, o RadioDent oferece o ambiente ideal para simulações radiográficas.
           </p>
         </div>
         <div></div>
@@ -134,13 +124,9 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
         <div className="w-full max-w-md space-y-6">
           
           <div>
-            <h3 className="text-2xl font-bold text-white mb-1">
-              {etapa === 1 ? 'Cadastre-se' : 'Cadastro finalizado'}
-            </h3>
+            <h3 className="text-2xl font-bold text-white mb-1">Cadastre-se</h3>
             <p className="text-slate-400 text-sm">
-              {etapa === 1
-                ? 'Escolha seu perfil e preencha os dados abaixo'
-                : 'Sua conta foi criada com sucesso'}
+              Escolha seu perfil e preencha os dados abaixo
             </p>
           </div>
 
@@ -151,29 +137,26 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
             </div>
           )}
 
-          {etapa === 1 ? (
-            <>
-              {/* Seleção do Perfil (Aluno / Professor) */}
-              <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => { setTipoUsuario('aluno'); setErro(''); }}
-                  disabled={carregando}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${tipoUsuario === 'aluno' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <span>Sou Aluno</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setTipoUsuario('professor'); setErro(''); }}
-                  disabled={carregando}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${tipoUsuario === 'professor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-                >
-                  <span>Sou Professor</span>
-                </button>
-              </div>
+          <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
+            <button
+              type="button"
+              onClick={() => { setTipoUsuario('aluno'); setErro(''); }}
+              disabled={carregando}
+              className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${tipoUsuario === 'aluno' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+            >
+              <span>Sou Aluno</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTipoUsuario('professor'); setErro(''); }}
+              disabled={carregando}
+              className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${tipoUsuario === 'professor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+            >
+              <span>Sou Professor</span>
+            </button>
+          </div>
 
-              <form onSubmit={validarEAvancar2FA} className="space-y-4" noValidate>
+          <form onSubmit={validarEAvancar2FA} className="space-y-4" noValidate>
                 
                 {/* Nome Completo */}
                 <div>
@@ -277,54 +260,7 @@ export default function TelaCadastro({ aoNavegarParaLogin }) {
                     <span>Concluir Cadastro</span>
                   )}
                 </button>
-              </form>
-            </>
-          ) : (
-            /* Cadastro criado */
-            <form onSubmit={validarEConcluirCadastro} className="space-y-5" noValidate>
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm leading-relaxed">
-                Cadastro realizado. Use seu e-mail e senha na tela de login para acessar.
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Já pode entrar na plataforma.</span>
-                <button 
-                  type="button" 
-                  onClick={mostrarAvisoLogin}
-                  disabled={carregando}
-                  className="text-blue-400 hover:underline hover:text-blue-300 font-medium cursor-pointer disabled:opacity-50"
-                >
-                  Entendi
-                </button>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <button 
-                  type="submit" 
-                  disabled={carregando}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {carregando ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Voltando...</span>
-                    </>
-                  ) : (
-                    <span>Ir para Login</span>
-                  )}
-                </button>
-
-                <button 
-                  type="button" 
-                  onClick={() => { setEtapa(1); setErro(''); }}
-                  disabled={carregando}
-                  className="w-full py-2.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  ← Revisar dados do cadastro
-                </button>
-              </div>
-            </form>
-          )}
+          </form>
 
           <div className="pt-4 border-t border-slate-800 text-center text-sm text-slate-400">
             Já possui uma conta?{" "}

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import LogoMarca from '../componentes/LogoMarca';
 
 export default function HomeProfessor({ usuario, aoSair }) {
   const [turmas, setTurmas] = useState([]);
@@ -162,9 +163,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
       <header className="bg-[#101726] border-b border-slate-800/80 px-8 py-4 flex items-center justify-between relative z-30">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center">
-              <span className="font-black text-blue-500 text-base">RD</span>
-            </div>
+            <LogoMarca tamanho="sm" />
             <div>
               <h1 className="text-base font-bold text-white tracking-tight leading-none">RadioDent</h1>
               <p className="text-[10px] font-semibold tracking-wider text-blue-400 uppercase mt-0.5">Treino Radiográfico</p>
