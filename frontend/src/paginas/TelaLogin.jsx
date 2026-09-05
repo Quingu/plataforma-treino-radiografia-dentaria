@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import ModalEsqueceuSenha from './ModalEsqueceuSenha';
+import { concluirLogin2FA, loginUsuario } from '../services/api';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
-  
-  // Login (E-mail e Senha)e 2FA 
   const [etapa, setEtapa] = useState(1);
 
   const [email, setEmail] = useState('');
@@ -11,12 +10,13 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   
   const [codigo2FA, setCodigo2FA] = useState('');
+  const [tokenTemporario, setTokenTemporario] = useState('');
 
   const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
   const [modalEsqueceuAberto, setModalEsqueceuAberto] = useState(false);
 
-  // validação do email e senha
-  const enviarFormulario = (evento) => {
+  const enviarFormulario = async (evento) => {
     evento.preventDefault();
     setErro(''); 
 
@@ -35,18 +35,29 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       return;
     }
 
-    // authenticação de senha forte
-    const regexSenhaForte = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
-    if (!regexSenhaForte.test(senha)) {
-      setErro('Senha inválida. A senha cadastrada deve conter no mínimo 8 caracteres, incluindo letra maiúscula, número e caractere especial.');
-      return;
-    }
+    setCarregando(true);
 
-    setEtapa(2);
+    try {
+      const dados = await loginUsuario({ email, password: senha });
+
+      if (dados.requer_2fa) {
+        setTokenTemporario(dados.token_temporario);
+        setEtapa(2);
+        return;
+      }
+
+      aoFazerLogin({
+        email,
+        ...dados,
+      });
+    } catch (err) {
+      setErro(err.message || 'Não foi possível entrar. Confira seus dados e tente novamente.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
-  // validação da etapa 2FA
-  const confirmar2FA = (evento) => {
+  const confirmar2FA = async (evento) => {
     evento.preventDefault();
     setErro('');
 
@@ -55,7 +66,23 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       return;
     }
 
-    aoFazerLogin({ email, senha, codigo2FA });
+    setCarregando(true);
+
+    try {
+      const dados = await concluirLogin2FA({
+        codigo: codigo2FA,
+        tokenTemporario,
+      });
+
+      aoFazerLogin({
+        email,
+        ...dados,
+      });
+    } catch (err) {
+      setErro(err.message || 'Código inválido ou expirado. Tente novamente.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
@@ -88,7 +115,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
           <p className="text-slate-400 text-base leading-relaxed">
             {etapa === 1 
               ? 'Simule análises, treine interpretações de laudos e eleve o nível do seu aprendizado prático com ferramentas interativas.'
-              : `Enviamos um código de acesso de 6 dígitos para o e-mail ${email}. Insira-o abaixo para concluir o login.`
+              : `Abra seu aplicativo autenticador e informe o código de 6 dígitos da conta ${email}.`
             }
           </p>
         </div>
@@ -106,7 +133,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
             <p className="text-slate-400 text-sm">
               {etapa === 1 
                 ? 'Insira seus dados abaixo para entrar no sistema' 
-                : 'Digite o código de 6 dígitos enviado ao seu e-mail'}
+                : 'Digite o código de 6 dígitos do seu autenticador'}
             </p>
           </div>
 
@@ -144,12 +171,13 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                   />
                   
                   {/* olho de ver a senha */}
-                  <button
-                    type="button"
-                    onClick={() => setMostrarSenha(!mostrarSenha)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    title={mostrarSenha ? "Ocultar senha" : "Ver senha"}
-                  >
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                  disabled={carregando}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title={mostrarSenha ? "Ocultar senha" : "Ver senha"}
+                >
                     {mostrarSenha ? (
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -176,9 +204,10 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
               <button
                 type="submit"
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors active:scale-[0.99] cursor-pointer"
+                disabled={carregando}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors active:scale-[0.99] cursor-pointer disabled:opacity-50"
               >
-                Entrar na Plataforma
+                {carregando ? 'Entrando...' : 'Entrar na Plataforma'}
               </button>
             </form>
           ) : (
@@ -194,32 +223,36 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                   placeholder="000000"
                   value={codigo2FA}
                   onChange={(e) => setCodigo2FA(e.target.value)}
+                  disabled={carregando}
                   className="w-full text-center tracking-[0.4em] text-2xl font-mono py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-blue-400 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 />
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Não recebeu o código?</span>
+                <span>Código gerado pelo aplicativo autenticador.</span>
                 <button
                   type="button"
-                  onClick={() => alert("Novo código enviado para seu e-mail!")}
+                  onClick={() => setErro('Use o código atual do seu aplicativo autenticador.')}
+                  disabled={carregando}
                   className="text-blue-400 hover:underline hover:text-blue-300 font-medium cursor-pointer"
                 >
-                  Reenviar código
+                  Preciso de ajuda
                 </button>
               </div>
 
               <div className="space-y-3 pt-2">
                 <button
                   type="submit"
-                  className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors active:scale-[0.99] cursor-pointer"
+                  disabled={carregando}
+                  className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors active:scale-[0.99] cursor-pointer disabled:opacity-50"
                 >
-                  Confirmar e Acessar
+                  {carregando ? 'Verificando...' : 'Confirmar e Acessar'}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => { setEtapa(1); setErro(''); }}
+                  disabled={carregando}
                   className="w-full py-2 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer text-center block"
                 >
                   ← Voltar para e-mail e senha

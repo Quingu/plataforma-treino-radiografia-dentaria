@@ -4,22 +4,14 @@ import TelaCadastro from './paginas/TelaCadastro';
 import HomeProfessor from './paginas/HomeProfessor';
 
 export default function App() {
-  // Telas possíveis: 'LOGIN' | 'CADASTRO' | 'HOME'
   const [telaAtual, setTelaAtual] = useState('LOGIN');
   const [usuario, setUsuario] = useState(null);
 
-  // Executado após passar do e-mail/senha + 2FA no TelaLogin
   const handleLoginSucesso = (dadosLogin) => {
-    // Define o tipo de usuário (por padrão professor para testes)
     setUsuario({
       email: dadosLogin.email,
-      tipoUsuario: 'professor'
+      tipoUsuario: dadosLogin.tipoUsuario || dadosLogin.perfil || 'professor'
     });
-    setTelaAtual('HOME');
-  };
-
-  const handleCadastroSucesso = (dadosUsuario) => {
-    setUsuario(dadosUsuario);
     setTelaAtual('HOME');
   };
 
@@ -35,7 +27,6 @@ export default function App() {
       {telaAtual === 'CADASTRO' && (
         <TelaCadastro
           aoNavegarParaLogin={() => setTelaAtual('LOGIN')}
-          aoConcluirCadastro={handleCadastroSucesso}
         />
       )}
 

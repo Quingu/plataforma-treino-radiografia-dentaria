@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import ModalTermos from './ModalTermos'; 
 import { validarEmailPorPerfil } from '../utils/validacao';
+import { cadastrarUsuario } from '../services/api';
 
-// Endereço base da API backend (com fallback local)
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
-
-export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro }) {
-  
-  // Controle do fluxo: 1 = Formulário de dados | 2 = Código 2FA
+export default function TelaCadastro({ aoNavegarParaLogin }) {
   const [etapa, setEtapa] = useState(1);
 
-  // Dados do formulário de cadastro
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -24,12 +19,8 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
-  // Código digitado na etapa de segurança
-  const [codigo2FA, setCodigo2FA] = useState('');
-
   const [modalAberto, setModalAberto] = useState(false);
 
-  // Valida o formulário e envia os dados para liberar o 2FA
   const validarEAvancar2FA = async (evento) => {
     evento.preventDefault();
     setErro('');
@@ -77,25 +68,13 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
     setCarregando(true);
 
     try {
-      const resposta = await fetch(`${API_URL}/usuarios/cadastro/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tipo_usuario: tipoUsuario,
-          nome_completo: nomeCompleto,
-          email: email,
-          senha: senha,
-          aceitou_termos: aceitouTermos
-        })
+      await cadastrarUsuario({
+        nome: nomeCompleto,
+        email,
+        password: senha,
+        tipo: tipoUsuario,
       });
 
-      const dados = await resposta.json();
-
-      if (!resposta.ok) {
-        throw new Error(dados.mensagem || 'Não foi possível cadastrar a conta.');
-      }
-
-      // verificação do codigo autheiticador
       setEtapa(2);
     } catch (err) {
       setErro(err.message || 'Erro de conexão com o servidor. Tente novamente.');
@@ -104,72 +83,13 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
     }
   };
 
-  // Confirmação do código enviado por e-mail 
   const validarEConcluirCadastro = async (evento) => {
     evento.preventDefault();
-    setErro('');
-
-    if (!codigo2FA.trim() || codigo2FA.length < 6) {
-      setErro('Por favor, digite o código de 6 dígitos enviado para seu e-mail.');
-      return;
-    }
-
-    setCarregando(true);
-
-    try {
-      const resposta = await fetch(`${API_URL}/usuarios/validar-2fa/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          codigo_2fa: codigo2FA
-        })
-      });
-
-      const dados = await resposta.json();
-
-      if (!resposta.ok) {
-        throw new Error(dados.mensagem || 'Código de verificação incorreto.');
-      }
-
-      aoConcluirCadastro({
-        tipoUsuario,
-        nomeCompleto,
-        email,
-        senha,
-        codigo2FA,
-        ...dados
-      });
-    } catch (err) {
-      setErro(err.message || 'Código incorreto ou expirado. Tente novamente.');
-    } finally {
-      setCarregando(false);
-    }
+    aoNavegarParaLogin();
   };
 
-  // Reenvia o código de segurança para o e-mail do usuário
-  const handleReenviarCodigo = async () => {
-    setErro('');
-    setCarregando(true);
-    try {
-      const resposta = await fetch(`${API_URL}/usuarios/reenviar-2fa/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-
-      const dados = await resposta.json();
-
-      if (!resposta.ok) {
-        throw new Error(dados.mensagem || 'Não foi possível reenviar o código.');
-      }
-
-      alert("Novo código enviado com sucesso para o seu e-mail!");
-    } catch (err) {
-      setErro(err.message || "Não foi possível reenviar o código. Tente novamente.");
-    } finally {
-      setCarregando(false);
-    }
+  const mostrarAvisoLogin = () => {
+    setErro('O cadastro já foi criado. Faça login para continuar.');
   };
 
   return (
@@ -190,19 +110,19 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
 
         <div className="my-12 lg:my-0 space-y-6 max-w-lg">
           <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-semibold uppercase tracking-wider">
-            {etapa === 1 ? 'Crie sua Conta' : 'Verificação de Segurança'}
+            {etapa === 1 ? 'Crie sua Conta' : 'Cadastro Concluído'}
           </span>
           <h2 className="text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
             {etapa === 1 ? (
               <>Junte-se à nossa <span className="text-blue-500">comunidade acadêmica</span>.</>
             ) : (
-              <>Confirme sua <span className="text-blue-500">identidade</span> em dois fatores.</>
+              <>Acesse sua <span className="text-blue-500">conta</span> para continuar.</>
             )}
           </h2>
           <p className="text-slate-400 text-base leading-relaxed">
             {etapa === 1 
               ? 'Seja você aluno ou professor, o RadioDent oferece o ambiente ideal para simulações radiográficas.'
-              : `Enviamos um código de verificação para o e-mail ${email || 'cadastrado'}. Digite-o para ativar sua conta.`
+              : `Cadastro criado para ${email || 'o e-mail informado'}. Agora faça login para entrar na plataforma.`
             }
           </p>
         </div>
@@ -215,12 +135,12 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
           
           <div>
             <h3 className="text-2xl font-bold text-white mb-1">
-              {etapa === 1 ? 'Cadastre-se' : 'Autenticação 2FA'}
+              {etapa === 1 ? 'Cadastre-se' : 'Cadastro finalizado'}
             </h3>
             <p className="text-slate-400 text-sm">
-              {etapa === 1 
-                ? 'Escolha seu perfil e preencha os dados abaixo' 
-                : 'Digite o código de 6 dígitos que você recebeu'}
+              {etapa === 1
+                ? 'Escolha seu perfil e preencha os dados abaixo'
+                : 'Sua conta foi criada com sucesso'}
             </p>
           </div>
 
@@ -360,32 +280,21 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
               </form>
             </>
           ) : (
-            /* DIGITAR CÓDIGO 2FA --- */
+            /* Cadastro criado */
             <form onSubmit={validarEConcluirCadastro} className="space-y-5" noValidate>
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                  Código de Autenticação
-                </label>
-                <input 
-                  type="text" 
-                  maxLength="6"
-                  placeholder="000000" 
-                  value={codigo2FA} 
-                  onChange={(e) => setCodigo2FA(e.target.value)} 
-                  disabled={carregando}
-                  className="w-full text-center tracking-[0.4em] text-2xl font-mono py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-blue-400 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50" 
-                />
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 text-sm leading-relaxed">
+                Cadastro realizado. Use seu e-mail e senha na tela de login para acessar.
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Não recebeu o código?</span>
+                <span>Já pode entrar na plataforma.</span>
                 <button 
                   type="button" 
-                  onClick={handleReenviarCodigo}
+                  onClick={mostrarAvisoLogin}
                   disabled={carregando}
                   className="text-blue-400 hover:underline hover:text-blue-300 font-medium cursor-pointer disabled:opacity-50"
                 >
-                  Reenviar código
+                  Entendi
                 </button>
               </div>
 
@@ -398,10 +307,10 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   {carregando ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Verificando...</span>
+                      <span>Voltando...</span>
                     </>
                   ) : (
-                    <span>Verificar e Ativar Conta</span>
+                    <span>Ir para Login</span>
                   )}
                 </button>
 
@@ -411,7 +320,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   disabled={carregando}
                   className="w-full py-2.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  ← Voltar para dados do cadastro
+                  ← Revisar dados do cadastro
                 </button>
               </div>
             </form>
