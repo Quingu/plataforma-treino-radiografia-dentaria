@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import LogoMarca from '../componentes/LogoMarca';
-import { configurar2FA, verificar2FA } from '../services/api';
+import { configurar2FA, limparTokens, verificar2FA } from '../services/api';
 
 export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
   const [dados2FA, setDados2FA] = useState(null);
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState('');
+  const [chaveCopiada, setChaveCopiada] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [verificando, setVerificando] = useState(false);
 
@@ -15,6 +17,12 @@ export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
         const dados = await configurar2FA();
         setDados2FA(dados);
       } catch (err) {
+        if (err.message?.toLowerCase().includes('token')) {
+          limparTokens();
+          aoVoltar();
+          return;
+        }
+
         setErro(err.message || 'Não foi possível preparar a autenticação em duas etapas.');
       } finally {
         setCarregando(false);
@@ -22,11 +30,13 @@ export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
     }
 
     carregarConfiguracao();
-  }, []);
+  }, [aoVoltar]);
 
   const copiarChave = async () => {
     if (!dados2FA?.chave_secreta) return;
     await navigator.clipboard.writeText(dados2FA.chave_secreta);
+    setChaveCopiada(true);
+    setTimeout(() => setChaveCopiada(false), 1800);
   };
 
   const confirmarCodigo = async (evento) => {
@@ -98,25 +108,52 @@ export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
             <form onSubmit={confirmarCodigo} className="space-y-5" noValidate>
               <div className="space-y-3">
                 <p className="text-sm text-slate-300">
-                  No Google Authenticator, escolha a opção de inserir uma chave de configuração e use o código abaixo.
+                  Escaneie o QR Code com o Google Authenticator. Se preferir, copie a chave de configuração.
                 </p>
 
-                <div className="bg-[#141d2b] border border-slate-700/80 rounded-xl p-4">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block mb-2">
-                    Chave de configuração
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <code className="flex-1 text-blue-300 text-sm break-all">{dados2FA?.chave_secreta}</code>
-                    <button
-                      type="button"
-                      onClick={copiarChave}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-                    >
-                      Copiar
-                    </button>
+                <div className="bg-[#141d2b] border border-slate-700/80 rounded-xl p-5 space-y-4">
+                  <div className="flex justify-center">
+                    <div className="bg-white p-3 rounded-lg">
+                      <QRCodeSVG
+                        value={dados2FA?.uri_qr_code || ''}
+                        size={170}
+                        bgColor="#ffffff"
+                        fgColor="#0f172a"
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block mb-2">
+                      Chave de configuração
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-h-10 px-3 py-2 bg-[#0d131d] border border-slate-800 rounded-lg text-slate-500 text-sm font-mono tracking-widest flex items-center">
+                        ••••••••••••••••••••••••••••••••
+                      </div>
+                      <button
+                        type="button"
+                        onClick={copiarChave}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                      >
+                        {chaveCopiada ? 'Copiada' : 'Copiar'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-500 leading-relaxed">
+                    Guarde essa chave apenas se precisar configurar o autenticador manualmente.
                   </div>
                 </div>
               </div>
+
+              {!dados2FA?.uri_qr_code && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                  Não foi possível gerar o QR Code. Tente voltar para o login e entrar novamente.
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
