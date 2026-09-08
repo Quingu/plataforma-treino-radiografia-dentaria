@@ -193,3 +193,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@radiodent.com")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-treino-radiografia-denta.vercel.app")

@@ -25,9 +25,14 @@ def enviar_email_brevo(destinatario_email, destinatario_nome, assunto, html_cont
         "htmlContent": html_conteudo
     }
     
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=20)
+    
+    try:
+        resposta = response.json()
+    except ValueError:
+        resposta = {"erro": response.text}
     
     if response.status_code in [200, 201, 202]:
-        return True, response.json()
-    else:
-        return False, response.json()
+        return True, resposta
+
+    return False, resposta

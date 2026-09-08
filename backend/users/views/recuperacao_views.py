@@ -27,15 +27,16 @@ class SolicitarRecuperacaoSenhaView(APIView):
                 usuario = Usuario.objects.get(email=email)
                 novo_token = TokenDeRecuperacao.objects.create(usuario=usuario)
                 
-                # Monta a URL que o frontend vai processar
-                link_recuperacao = f"https://seu-frontend.com/recuperar-senha?token={novo_token.token}"
+                link_recuperacao = f"{settings.FRONTEND_URL}/recuperar-senha?token={novo_token.token}"
                 
                 # Assunto do e-mail em HTML para a Brevo
                 assunto = "Recuperação de Senha - Plataforma de Radiografia"
                 html_conteudo = f"""
                     <h2>Olá, {usuario.nome}</h2>
                     <p>Você solicitou a recuperação de senha para a sua conta na plataforma de treino de radiografia.</p>
-                    <p>Acesse o link abaixo para redefinir sua senha. <b>Este link expira em 15 minutos:</b></p>
+                    <p>Use o token abaixo para criar uma nova senha. <b>Este token expira em 15 minutos:</b></p>
+                    <p style="font-size: 18px; font-weight: bold; letter-spacing: 1px;">{novo_token.token}</p>
+                    <p>Se preferir, acesse o link abaixo para redefinir sua senha:</p>
                     <p><a href="{link_recuperacao}" target="_blank">Redefinir Minha Senha</a></p>
                     <p>Se você não solicitou isso, ignore este e-mail.</p>
                 """
@@ -44,7 +45,7 @@ class SolicitarRecuperacaoSenhaView(APIView):
                 sucesso, resposta = enviar_email_brevo(usuario.email, usuario.nome, assunto, html_conteudo)
                 
                 if not sucesso:
-                    pass
+                    print(f"Falha ao enviar recuperacao de senha: {resposta}")
                 
             except Usuario.DoesNotExist:
                 pass
