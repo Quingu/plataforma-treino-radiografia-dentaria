@@ -82,6 +82,12 @@ class ConcluirLogin2FAView(APIView):
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
+                'usuario': {
+                    'id': usuario.id,
+                    'nome': usuario.nome,
+                    'email': usuario.email,
+                    'perfil': usuario.perfil,
+                },
                 'mensagem': 'Login realizado com sucesso.'
             }, status=status.HTTP_200_OK)
             

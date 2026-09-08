@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import TelaLogin from './paginas/TelaLogin';
 import TelaCadastro from './paginas/TelaCadastro';
 import TelaConfigurar2FA from './paginas/TelaConfigurar2FA';
+import HomeAluno from './paginas/HomeAluno';
 import HomeProfessor from './paginas/HomeProfessor';
 import {
   buscarUsuarioSalvo,
@@ -20,9 +21,12 @@ export default function App() {
   });
 
   const handleLoginSucesso = (dadosLogin) => {
+    const dadosUsuario = dadosLogin.usuario || dadosLogin;
     const usuarioLogado = {
-      email: dadosLogin.email,
-      tipoUsuario: dadosLogin.tipoUsuario || dadosLogin.perfil || 'professor'
+      id: dadosUsuario.id,
+      nome: dadosUsuario.nome || dadosLogin.nomeCompleto,
+      email: dadosUsuario.email || dadosLogin.email,
+      perfil: dadosUsuario.perfil || dadosUsuario.tipoUsuario || dadosLogin.perfil || dadosLogin.tipoUsuario || 'aluno',
     };
 
     salvarUsuario(usuarioLogado);
@@ -41,6 +45,8 @@ export default function App() {
     marcar2FAPendente(false);
     setTelaAtual('HOME');
   };
+
+  const perfilUsuario = String(usuario?.perfil || usuario?.tipoUsuario || '').toLowerCase();
 
   return (
     <div className="min-h-screen bg-[#0d131d] text-white">
@@ -67,10 +73,17 @@ export default function App() {
       )}
 
       {telaAtual === 'HOME' && (
-        <HomeProfessor
-          usuario={usuario}
-          aoSair={handleSair}
-        />
+        perfilUsuario === 'professor' ? (
+          <HomeProfessor
+            usuario={usuario}
+            aoSair={handleSair}
+          />
+        ) : (
+          <HomeAluno
+            usuario={usuario}
+            aoSair={handleSair}
+          />
+        )
       )}
     </div>
   );
