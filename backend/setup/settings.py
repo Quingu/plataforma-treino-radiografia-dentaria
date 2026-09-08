@@ -20,6 +20,12 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 # Permite todos os hosts para rodar no Render 
 ALLOWED_HOSTS = ['*']
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://plataforma-treino-radiografia-denta.vercel.app',
+]
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -33,6 +39,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
     'drf_yasg',
     'users',
     'radiografias',
@@ -63,6 +70,7 @@ STORAGES = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
