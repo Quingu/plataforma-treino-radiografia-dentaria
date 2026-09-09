@@ -79,7 +79,6 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 select-none animate-fade-in">
       <div className="bg-[#141d2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
         
-        {/* Fechar Modal */}
         <button 
           onClick={aoFechar}
           disabled={carregando}
@@ -91,7 +90,6 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </svg>
         </button>
 
-        {/* SOLICITAR E-MAIL */}
         {etapa === 'solicitar_email' && (
           <>
             <div className="space-y-2">
@@ -140,7 +138,6 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </>
         )}
 
-        {/* NOVA SENHA */}
         {etapa === 'nova_senha' && (
           <>
             <div className="space-y-2">
@@ -249,7 +246,6 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
           </>
         )}
 
-        {/* SUCESSO FINAL */}
         {etapa === 'sucesso' && (
           <div className="text-center space-y-4 py-4">
             <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400">

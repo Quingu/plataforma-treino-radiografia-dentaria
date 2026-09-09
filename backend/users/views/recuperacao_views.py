@@ -23,13 +23,11 @@ class SolicitarRecuperacaoSenhaView(APIView):
             email = serializador.validated_data['email']
             
             try:
-                # Busca o usuário no banco
                 usuario = Usuario.objects.get(email=email)
                 novo_token = TokenDeRecuperacao.objects.create(usuario=usuario)
                 
                 link_recuperacao = f"{settings.FRONTEND_URL}/recuperar-senha?token={novo_token.token}"
                 
-                # Assunto do e-mail em HTML para a Brevo
                 assunto = "Recuperação de Senha - Plataforma de Radiografia"
                 html_conteudo = f"""
                     <h2>Olá, {usuario.nome}</h2>
@@ -41,7 +39,6 @@ class SolicitarRecuperacaoSenhaView(APIView):
                     <p>Se você não solicitou isso, ignore este e-mail.</p>
                 """
                 
-                # envio do e-mail via API da Brevo
                 sucesso, resposta = enviar_email_brevo(usuario.email, usuario.nome, assunto, html_conteudo)
                 
                 if not sucesso:

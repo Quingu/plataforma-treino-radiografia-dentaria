@@ -29,14 +29,12 @@ export default function MinhasTurmas() {
     }
   ]);
 
-  // Copiar Código e mostrar notificação flutuante
   const handleCopiar = (turma) => {
     navigator.clipboard.writeText(turma.codigo);
     setAlertaCopiado(`Código ${turma.codigo} da turma "${turma.nome}" copiado!`);
     setTimeout(() => setAlertaCopiado(null), 3000);
   };
 
-  // Gerar um código novo
   const handleGerarNovoCodigo = (id) => {
     const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const nums = '0123456789';
@@ -53,7 +51,6 @@ export default function MinhasTurmas() {
   return (
     <div className="min-h-screen bg-[#0d131d] text-white p-6 lg:p-10 font-sans relative">
       
-      {/* Toast Notificação de Código Copiado */}
       {alertaCopiado && (
         <div className="fixed top-6 right-6 z-50 bg-emerald-500 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
           <span className="text-xl">✓</span>
@@ -61,7 +58,6 @@ export default function MinhasTurmas() {
         </div>
       )}
 
-      {/* Topo / Header */}
       <header className="flex items-center justify-between pb-8 border-b border-slate-800/80 mb-8">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
@@ -92,7 +88,6 @@ export default function MinhasTurmas() {
         </div>
       </header>
 
-      {/* Cards de Resumo Rápido */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-[#141d2b] border border-slate-800 rounded-xl p-4 flex items-center gap-4">
           <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg text-xl font-bold">🏫</div>
@@ -117,7 +112,6 @@ export default function MinhasTurmas() {
         </div>
       </div>
 
-      {/* Titulo + Botão Criar Turma */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-bold text-white">Minhas Turmas</h2>
@@ -129,13 +123,11 @@ export default function MinhasTurmas() {
         </button>
       </div>
 
-      {/* Grid das Turmas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {turmas.map((turma) => (
           <div key={turma.id} className="bg-[#141d2b] border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-xl relative">
             
             <div>
-              {/* Header do Card + Menu de Opções */}
               <div className="flex items-start justify-between gap-3 mb-3">
                 <h3 className="text-base font-bold text-white leading-snug">{turma.nome}</h3>
                 
@@ -147,7 +139,6 @@ export default function MinhasTurmas() {
                     ⚙️
                   </button>
 
-                  {/* Menu Pop-over de Opções */}
                   {menuAbertoId === turma.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-[#1c283a] border border-slate-700 rounded-xl shadow-2xl z-20 py-1 text-xs">
                       <button 
@@ -167,7 +158,6 @@ export default function MinhasTurmas() {
                 </div>
               </div>
 
-              {/* Informações da Turma */}
               <div className="flex items-center gap-4 text-xs text-slate-400 mb-5">
                 <span className="flex items-center gap-1.5">
                   👤 {turma.alunos} Alunos
@@ -177,7 +167,6 @@ export default function MinhasTurmas() {
                 </span>
               </div>
 
-              {/* Bloco de Código de Acesso Interativo */}
               <div 
                 onClick={() => handleCopiar(turma)}
                 className="bg-[#0b1019] border border-slate-800 hover:border-blue-500/50 rounded-xl p-4 text-center cursor-pointer transition-all group mb-4"
@@ -194,7 +183,6 @@ export default function MinhasTurmas() {
               </div>
             </div>
 
-            {/* Ações Inferiores */}
             <div className="space-y-2 pt-2">
               <button 
                 onClick={() => alert(`Entrando na turma: ${turma.nome}`)}
@@ -215,7 +203,6 @@ export default function MinhasTurmas() {
         ))}
       </div>
 
-      {/* Modal para confirmar geração de novo código */}
       {modalRedefinir && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-[#141d2b] border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl">

@@ -22,7 +22,7 @@ class CasoClinico(models.Model):
         verbose_name='Região Anatômica'
     )
 
-    # Organiza as pasta por Ano/Mes
+    # Separa os uploads por ano e mês
     imagem = models.ImageField(upload_to='radiografias/%Y/%m/', verbose_name='Arquivo de Imagem')
     
     professor = models.ForeignKey(

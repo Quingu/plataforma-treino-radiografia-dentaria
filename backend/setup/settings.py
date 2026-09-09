@@ -5,19 +5,16 @@ from dotenv import load_dotenv
 import dj_database_url
 from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Força o carregamento do .env que está na raiz da pasta backend
+# Carrega as variáveis locais do backend
 load_dotenv(BASE_DIR / '.env')
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-o2z!_80b8x&^cw-0r+#5z+me=(5p&f%@y!useim9k1ka3f=lbo')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# Permite todos os hosts para rodar no Render 
+# Mantém o backend acessível no Render
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
@@ -26,8 +23,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://plataforma-treino-radiografia-denta.vercel.app',
 ]
 
-
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -98,9 +93,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'setup.wsgi.application'
 
-
-# Database
-# Configuração padrão conectada ao Supabase (PostgreSQL) via URL do .env
+# Banco principal no Supabase
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL'),
@@ -108,15 +101,13 @@ DATABASES = {
     )
 }
 
-# Configuração isolada para o TDD: utiliza SQLite local durante a execução dos testes
+# Banco separado para rodar testes
 if 'pytest' in sys.modules or 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 
-
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -137,8 +128,6 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
 
-
-# Internationalization
 LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'America/Sao_Paulo'
@@ -147,32 +136,25 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Email
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
 
-
-# Define que o sistema de autenticação deve usar a nossa classe 'Usuario'
+# Modelo de usuário usado no login
 AUTH_USER_MODEL = 'users.Usuario'
 
-# Tipo padrão de chave primária para os modelos
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
-    # Autenticação padrão via JWT
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    # Proteção contra Força Bruta (Rate Limit)
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
@@ -184,13 +166,11 @@ REST_FRAMEWORK = {
     }
 }
 
-# Configuração de arquivos de mídia (Local)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
-#coisa para o email
-
+# Dados usados nos e-mails enviados pelo sistema
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@radiodent.com")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-treino-radiografia-denta.vercel.app")

@@ -4,13 +4,11 @@ import LogoMarca from '../componentes/LogoMarca';
 export default function HomeProfessor({ usuario, aoSair }) {
   const [turmas, setTurmas] = useState([]);
 
-  // Modais e Controles de Turma
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [modalEditarAberto, setModalEditarAberto] = useState(false);
   const [modalAlunosAberto, setModalAlunosAberto] = useState(false);
   const [modalExcluirAberto, setModalExcluirAberto] = useState(false);
 
-  // Estados de Perfil do Professor
   const [menuPerfilAberto, setMenuPerfilAberto] = useState(false);
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
   const [confirmarSalvarPerfil, setConfirmarSalvarPerfil] = useState(false);
@@ -29,21 +27,19 @@ export default function HomeProfessor({ usuario, aoSair }) {
 
   const fileInputRef = useRef(null);
 
-  // Estados de formulário/seleção de turmas
   const [nomeTurma, setNomeTurma] = useState('');
   const [disciplina, setDisciplina] = useState('');
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
   const [copiadoId, setCopiadoId] = useState(null);
   const [menuAbertoId, setMenuAbertoId] = useState(null);
 
-  // Exemplo de alunos fictícios
+  // Dados temporários até ligar a listagem na API
   const alunosExemplo = [
     { id: 1, nome: 'Ana Beatriz Souza', email: 'ana.souza@email.com' },
     { id: 2, nome: 'Lucas Gabriel Lima', email: 'lucas.lima@email.com' },
     { id: 3, nome: 'Matheus Oliveira', email: 'matheus.o@email.com' }
   ];
 
-  // Handlers do Perfil
   const handleUploadFoto = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -73,7 +69,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
     if (aoSair) aoSair();
   };
 
-  // Handlers de Turma
   const handleCopiar = (id, codigo) => {
     navigator.clipboard.writeText(codigo);
     setCopiadoId(id);
@@ -159,7 +154,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
   return (
     <div className="min-h-screen bg-[#0d131d] text-white flex flex-col font-sans select-none">
       
-      {/* Header */}
       <header className="bg-[#101726] border-b border-slate-800/80 px-8 py-4 flex items-center justify-between relative z-30">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
@@ -177,7 +171,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
           </nav>
         </div>
 
-        {/* Perfil do Professor */}
         <div className="relative">
           <button 
             onClick={() => setMenuPerfilAberto(!menuPerfilAberto)}
@@ -196,7 +189,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
             </div>
           </button>
 
-          {/* Menu Suspenso do Perfil */}
           {menuPerfilAberto && (
             <div className="absolute right-0 mt-2 w-52 bg-[#121b2b] border border-slate-700/80 rounded-xl shadow-2xl z-40 py-2 text-xs">
               <div className="px-4 py-2 border-b border-slate-800">
@@ -213,7 +205,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
                 Editar Perfil
               </button>
 
-              {/* Excluir Conta no Menu de Perfil */}
               <button
                 onClick={() => {
                   setConfirmarExcluirConta(true);
@@ -237,7 +228,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
         </div>
       </header>
 
-      {/* ÁREA PRINCIPAL */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 lg:p-10">
         
         {turmas.length === 0 ? (
@@ -274,7 +264,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
               </button>
             </div>
 
-            {/* Grid dos Cards de Turma */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {turmas.map((item) => (
                 <div key={item.id} className="bg-[#141d2b] border border-slate-800/90 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-xl relative">
@@ -339,7 +328,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
         )}
       </main>
 
-      {/* MODAL EDITAR PERFIL DO PROFESSOR */}
       {modalPerfilAberto && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
@@ -349,7 +337,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
             </div>
 
             <form onSubmit={handleValidarPerfil} className="space-y-4">
-              {/* Foto de Perfil */}
               <div className="flex flex-col items-center gap-3">
                 <div className="w-20 h-20 rounded-full bg-slate-800 border-2 border-blue-500/50 flex items-center justify-center overflow-hidden relative select-none">
                   {dadosProfessor.fotoUrl ? (
@@ -376,7 +363,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
                 </button>
               </div>
 
-              {/* Nome Completo */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nome Completo</label>
                 <input
@@ -388,7 +374,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
                 />
               </div>
 
-              {/* Nova Senha */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nova Senha</label>
                 <div className="relative flex items-center">
@@ -418,7 +403,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
                 </div>
               </div>
 
-              {/* Confirmar Nova Senha */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Confirmar Nova Senha</label>
                 <div className="relative flex items-center">
@@ -454,7 +438,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
               </div>
             </form>
 
-            {/* Confirmação de Alteração do Perfil */}
             {confirmarSalvarPerfil && (
               <div className="absolute inset-0 bg-[#121b2b]/95 backdrop-blur-xs rounded-2xl p-6 flex flex-col justify-center items-center text-center space-y-4 z-10">
                 <h4 className="text-base font-bold text-white">Confirmar Alteração</h4>
@@ -483,7 +466,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
         </div>
       )}
 
-      {/* MODAL GLOBAL DE EXCLUSÃO DE CONTA */}
       {confirmarExcluirConta && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
@@ -511,7 +493,6 @@ export default function HomeProfessor({ usuario, aoSair }) {
         </div>
       )}
 
-      {/* MODAIS DE TURMA (CRIAR, EDITAR, EXCLUIR, VER ALUNOS) */}
       {modalCriarAberto && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">

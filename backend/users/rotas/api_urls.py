@@ -14,15 +14,12 @@ class VisaoLoginProtegido(TokenObtainPairView):
         return [limitador() for limitador in self.classes_de_limitacao]
 
 urlpatterns = [
-    # Rotas de Cadastro e Login Protegido
     path('registro/', RegistroDeUsuarioView.as_view(), name='registro-de-usuario'),
     path('login/', VisaoLoginProtegido.as_view(), name='obter-token-de-login'),
     path('token/atualizar/', TokenRefreshView.as_view(), name='atualizar-token'),
-    # Rotas do 2fa
     path('2fa/configurar/', Configurar2FAView.as_view(), name='configurar-2fa'),
     path('2fa/verificar/', Verificar2FAView.as_view(), name='verificar-2fa'),
     path('login/2fa/', ConcluirLogin2FAView.as_view(), name='concluir-login-2fa'),
-    # Rotas de Recuperação de Senha Protegidas
     path('recuperar-senha/solicitar/', SolicitarRecuperacaoSenhaView.as_view(), name='solicitar-recuperacao'),
     path('recuperar-senha/redefinir/', RedefinirSenhaView.as_view(), name='redefinir-senha'),
 ]

@@ -29,7 +29,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    // Regras de e-mail específicas para aluno ou professor
     const erroEmail = validarEmailPorPerfil(email, tipoUsuario);
     if (erroEmail) {
       setErro(erroEmail);
@@ -41,7 +40,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    // Exige: mínimo 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial
+    // Mesma regra usada na recuperação de senha
     const regexSenhaForte = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
     
     if (!regexSenhaForte.test(senha)) {
@@ -94,7 +93,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
   return (
     <div className="min-h-screen bg-[#0d131d] text-white grid grid-cols-1 lg:grid-cols-12 select-none">
       
-      {/* Lado Esquerdo - Apresentação */}
       <div className="lg:col-span-6 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
@@ -119,7 +117,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
         <div></div>
       </div>
 
-      {/* Lado Direito - Formulário */}
       <div className="lg:col-span-6 flex items-center justify-center p-8 lg:p-12 bg-[#0d131d]">
         <div className="w-full max-w-md space-y-6">
           
@@ -130,7 +127,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
             </p>
           </div>
 
-          {/* Mensagem de Erro */}
           {erro && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
@@ -158,13 +154,11 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
 
           <form onSubmit={validarEAvancar2FA} className="space-y-4" noValidate>
                 
-                {/* Nome Completo */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nome Completo</label>
                   <input type="text" placeholder="Ex: Gabriel Silva" value={nomeCompleto} onChange={(e) => setNomeCompleto(e.target.value)} disabled={carregando} className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50" />
                 </div>
 
-                {/* E-mail */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                     {tipoUsuario === 'professor' ? 'E-mail Institucional' : 'E-mail'}
@@ -175,7 +169,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   )}
                 </div>
 
-                {/* Senha e Confirmação */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   
                   <div>
@@ -230,7 +223,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   </div>
                 </div>
 
-                {/* Aceite dos Termos */}
                 <div className="flex items-start gap-3 pt-2">
                   <input type="checkbox" id="aceitouTermos" checked={aceitouTermos} onChange={(e) => setAceitouTermos(e.target.checked)} disabled={carregando} className="mt-1 h-4 w-4 rounded border-slate-700 bg-[#141d2b] text-blue-600 focus:ring-blue-500 cursor-pointer" />
                   <label htmlFor="aceitouTermos" className="text-xs text-slate-400 leading-relaxed cursor-pointer select-none">
@@ -241,7 +233,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                   </label>
                 </div>
 
-                {/* Botão de Envio */}
                 <button 
                   type="submit" 
                   disabled={!aceitouTermos || carregando} 
@@ -269,7 +260,6 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
         </div>
       </div>
 
-      {/* Modal de Termos e Condições */}
       {modalAberto && (
         <ModalTermos aoFechar={() => setModalAberto(false)} />
       )}

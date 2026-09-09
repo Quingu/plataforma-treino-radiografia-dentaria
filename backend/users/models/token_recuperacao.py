@@ -11,13 +11,11 @@ class TokenDeRecuperacao(models.Model):
         related_name='tokens_recuperacao'
     )
     
-    # O UUID4 gera um hash criptograficamente seguro e único para o token
     token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     utilizado = models.BooleanField(default=False)
 
     def esta_valido(self):
-        # Valida se o token não foi usado e se tem menos de 15 minutos de vida
         tempo_limite = timezone.now() - timedelta(minutes=15)
         return not self.utilizado and self.criado_em >= tempo_limite
 

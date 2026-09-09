@@ -16,7 +16,7 @@ class Configurar2FAView(APIView):
         if not usuario.chave_secreta_2fa:
             usuario.gerar_chave_2fa()
             
-        # Gera a uri que o frontavi transformar em QR Code
+        # URI usada pelo front para montar o QR Code
         uri_qr_code = pyotp.totp.TOTP(usuario.chave_secreta_2fa).provisioning_uri(
             name=usuario.email, 
             issuer_name='RadioDent'
@@ -47,7 +47,7 @@ class Verificar2FAView(APIView):
             
         totp = pyotp.TOTP(usuario.chave_secreta_2fa)
         
-       # verifica com uma margem de 30s
+        # Pequena margem para diferença de horário no autenticador
         if totp.verify(codigo):
             return Response(
                 {'mensagem': 'Código 2FA verificado com sucesso.'}, 

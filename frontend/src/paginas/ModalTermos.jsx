@@ -1,11 +1,4 @@
 import React from 'react';
-
-/**
- * ModalTermos
- * @param {function} aoFechar - Função para fechar o modal.
- * @param {function} [aoAceitar] - (Opcional) Função disparada quando o usuário aceita os termos ativamente no cadastro/login (RN-02).
- * @param {boolean} [modoAceite=false] - Se true, exibe os botões de Aceitar/Recusar. Se false, exibe apenas botão "Fechar".
- */
 export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false }) {
 
   const lidarComAceite = () => {
@@ -24,7 +17,6 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
       
       <div className="bg-[#101927] border border-slate-700/80 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
         
-        {/* CABEÇALHO DO MODAL */}
         <div className="flex items-center justify-between p-6 border-b border-slate-800">
           <div>
             <h2 className="text-xl font-bold text-white tracking-tight">Termos de Uso & Privacidade</h2>
@@ -42,7 +34,6 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
           </button>
         </div>
 
-        {/* CONTEÚDO DO MODAL */}
         <div className="p-6 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed custom-scrollbar">
           
           <p className="text-slate-400 italic text-xs border-l-2 border-blue-500 pl-3 py-1">
@@ -92,7 +83,6 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
 
         </div>
 
-        {/* RODAPÉ DO MODAL */}
         <div className="p-5 border-t border-slate-800 flex items-center justify-between bg-[#0d131d] rounded-b-2xl">
           <span className="text-xs text-slate-500 hidden sm:inline">
             RadioDent • Privacy by Default

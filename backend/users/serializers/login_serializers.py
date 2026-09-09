@@ -1,5 +1,3 @@
-# Arquivo: users/serializers/login_serializers.py
-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 

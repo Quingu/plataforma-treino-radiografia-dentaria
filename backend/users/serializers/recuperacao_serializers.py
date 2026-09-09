@@ -10,7 +10,6 @@ class SerializadorRedefinicaoSenha(serializers.Serializer):
     nova_password = serializers.CharField(write_only=True, min_length=8)
 
     def validate_nova_password(self, valor):
-        # Validação de complexidade
         if not re.search(r'[A-Z]', valor):
             raise serializers.ValidationError("A senha deve conter pelo menos uma letra maiúscula.")
         if not re.search(r'[a-z]', valor):

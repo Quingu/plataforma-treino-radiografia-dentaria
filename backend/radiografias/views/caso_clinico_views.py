@@ -9,7 +9,6 @@ class ListarCriarCasoClinicoView(generics.ListCreateAPIView):
     queryset = CasoClinico.objects.all().order_by('-criado_em')
     serializer_class = SerializadorCasoClinico
     permission_classes = [IsAuthenticated, EhProfessorOuSomenteLeitura]
-    #para aceitar o upload de imagens
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
@@ -27,4 +26,4 @@ class DetalheCasoClinicoView(generics.RetrieveAPIView):
     queryset = CasoClinico.objects.all()
     serializer_class = SerializadorCasoClinico
     permission_classes = [IsAuthenticated]
-    lookup_field = 'pk' #pk se refere a chave primaria
+    lookup_field = 'pk'

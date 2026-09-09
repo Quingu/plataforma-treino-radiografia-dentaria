@@ -90,7 +90,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   return (
     <div className="min-h-screen bg-[#0d131d] text-white grid grid-cols-1 lg:grid-cols-12 select-none">
       
-      {/* Texto e apresentação do site */}
       <div className="lg:col-span-7 bg-gradient-to-br from-[#101927] via-[#152338] to-[#0d131d] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
         
         <div className="flex items-center gap-3">
@@ -122,7 +121,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
         <div></div>
       </div>
 
-      {/* Formulario de Login / 2FA */}
       <div className="lg:col-span-5 flex items-center justify-center p-8 lg:p-12 bg-[#0d131d]">
         <div className="w-full max-w-md space-y-8">
           
@@ -137,7 +135,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
             </p>
           </div>
 
-          {/* Quando aparece o erro */}
           {erro && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center justify-center">
               <div>{erro}</div>
@@ -145,7 +142,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
           )}
 
           {etapa === 1 ? (
-            /* ETAPA 1: EMAIL E SENHA */
             <form onSubmit={enviarFormulario} noValidate className="space-y-5">
               
               <div>
@@ -170,7 +166,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                     className="w-full px-4 py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12"
                   />
                   
-                  {/* olho de ver a senha */}
                 <button
                   type="button"
                   onClick={() => setMostrarSenha(!mostrarSenha)}
@@ -211,7 +206,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
               </button>
             </form>
           ) : (
-            /* ETAPA 2: CÓDIGO 2FA */
             <form onSubmit={confirmar2FA} noValidate className="space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
@@ -273,7 +267,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
         </div>
       </div>
 
-      {/* Esqueci senha */}
       {modalEsqueceuAberto && (
         <ModalEsqueceuSenha aoFechar={() => setModalEsqueceuAberto(false)} />
       )}

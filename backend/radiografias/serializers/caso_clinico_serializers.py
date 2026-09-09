@@ -7,8 +7,7 @@ class SerializadorCasoClinico(serializers.ModelSerializer):
         fields = ['id', 'titulo', 'descricao', 'regiao_anatomica', 'imagem', 'professor', 'criado_em']
         read_only_fields = ['id', 'professor', 'criado_em']
 
-
-# Faz a associação do prof logado na requi. automat
+    # Liga o caso ao professor logado
     def create(self, validated_data):
         request = self.context.get('request')
         validated_data['professor'] = request.user

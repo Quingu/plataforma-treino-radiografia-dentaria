@@ -19,7 +19,7 @@ class Tarefa(models.Model):
     
     instrucoes = models.TextField(verbose_name='Instruções da Tarefa')
     
-    # O JSONField faz o armazenamento do gabarito no formato {"x_min": , "y_min": , "x_max": , "y_max": }
+    # Coordenadas usadas como gabarito da marcação
     coordenadas_gabarito = models.JSONField(verbose_name='Gabarito (Bounding Box)')
     
     criado_em = models.DateTimeField(auto_now_add=True)

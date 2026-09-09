@@ -17,7 +17,7 @@ class ResolverTarefaView(generics.CreateAPIView):
         
         if serializer.is_valid():
             resolucao = serializer.save(tarefa=tarefa, aluno=request.user)
-            resolucao.avaliar_acerto() # Aciona a lógica matemática de avaliação
+            resolucao.avaliar_acerto()
             return Response(ResolucaoSerializer(resolucao).data, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -2,7 +2,6 @@ from rest_framework import permissions
 
 class EhProfessorOuSomenteLeitura(permissions.BasePermission):
     def has_permission(self, request, view):
-        # Bloqueia usuários não logados
         if not request.user or not request.user.is_authenticated:
             return False
         
