@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ModalTermos from './ModalTermos'; 
 import LogoMarca from '../componentes/LogoMarca';
+import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 import { validarEmailPorPerfil } from '../utils/validacao';
 import { cadastrarUsuario, loginUsuario } from '../services/api';
 
@@ -180,15 +181,13 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                         value={senha} 
                         onChange={(e) => setSenha(e.target.value)} 
                         disabled={carregando}
-                        className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-24 disabled:opacity-50" 
+                        className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12 disabled:opacity-50" 
                       />
-                      <button
-                        type="button"
-                        onClick={() => setMostrarSenha(!mostrarSenha)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {mostrarSenha ? 'Ocultar' : 'Mostrar'}
-                      </button>
+                      <BotaoOlhoSenha
+                        visivel={mostrarSenha}
+                        aoAlternar={() => setMostrarSenha(!mostrarSenha)}
+                        disabled={carregando}
+                      />
                     </div>
                     <p className="text-[10px] text-slate-500 mt-1">Mín. 8 caracteres, 1 maiúscula, 1 número e 1 símbolo.</p>
                   </div>
@@ -202,15 +201,13 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
                         value={confirmarSenha} 
                         onChange={(e) => setConfirmarSenha(e.target.value)} 
                         disabled={carregando}
-                        className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-24 disabled:opacity-50" 
+                        className="w-full px-4 py-3 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12 disabled:opacity-50" 
                       />
-                      <button
-                        type="button"
-                        onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {mostrarConfirmarSenha ? 'Ocultar' : 'Mostrar'}
-                      </button>
+                      <BotaoOlhoSenha
+                        visivel={mostrarConfirmarSenha}
+                        aoAlternar={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                        disabled={carregando}
+                      />
                     </div>
                   </div>
                 </div>

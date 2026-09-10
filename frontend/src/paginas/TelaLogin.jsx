@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ModalEsqueceuSenha from './ModalEsqueceuSenha';
 import LogoMarca from '../componentes/LogoMarca';
+import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 import { concluirLogin2FA, loginUsuario } from '../services/api';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
@@ -163,18 +164,13 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                     placeholder="••••••••"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-24"
+                    className="w-full px-4 py-3.5 bg-[#141d2b] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all pr-12"
                   />
-                  
-                <button
-                  type="button"
-                  onClick={() => setMostrarSenha(!mostrarSenha)}
-                  disabled={carregando}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  title={mostrarSenha ? "Ocultar senha" : "Ver senha"}
-                >
-                    {mostrarSenha ? 'Ocultar' : 'Mostrar'}
-                  </button>
+                  <BotaoOlhoSenha
+                    visivel={mostrarSenha}
+                    aoAlternar={() => setMostrarSenha(!mostrarSenha)}
+                    disabled={carregando}
+                  />
                 </div>
               </div>
 
@@ -240,7 +236,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                   disabled={carregando}
                   className="w-full py-2 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer text-center block"
                 >
-                  ← Voltar para e-mail e senha
+                  Voltar para e-mail e senha
                 </button>
               </div>
             </form>

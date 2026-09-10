@@ -53,7 +53,7 @@ export default function MinhasTurmas() {
       
       {alertaCopiado && (
         <div className="fixed top-6 right-6 z-50 bg-emerald-500 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
-          <span className="text-xl">✓</span>
+          <span className="text-xs uppercase tracking-wider">Ok</span>
           <span>{alertaCopiado}</span>
         </div>
       )}
@@ -90,21 +90,21 @@ export default function MinhasTurmas() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-[#141d2b] border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-          <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg text-xl font-bold">🏫</div>
+          <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg text-sm font-bold">T</div>
           <div>
             <p className="text-xs text-slate-400 font-medium">Total de Turmas</p>
             <p className="text-xl font-bold text-white">{turmas.length}</p>
           </div>
         </div>
         <div className="bg-[#141d2b] border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg text-xl font-bold">👥</div>
+          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm font-bold">A</div>
           <div>
             <p className="text-xs text-slate-400 font-medium">Alunos Matriculados</p>
             <p className="text-xl font-bold text-white">{totalAlunos}</p>
           </div>
         </div>
         <div className="bg-[#141d2b] border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-          <div className="p-3 bg-purple-500/10 text-purple-400 rounded-lg text-xl font-bold">📋</div>
+          <div className="p-3 bg-purple-500/10 text-purple-400 rounded-lg text-sm font-bold">T</div>
           <div>
             <p className="text-xs text-slate-400 font-medium">Tarefas em Andamento</p>
             <p className="text-xl font-bold text-white">{totalTarefas}</p>
@@ -136,7 +136,7 @@ export default function MinhasTurmas() {
                     onClick={() => setMenuAbertoId(menuAbertoId === turma.id ? null : turma.id)}
                     className="p-1 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                   >
-                    ⚙️
+                    ...
                   </button>
 
                   {menuAbertoId === turma.id && (
@@ -145,13 +145,13 @@ export default function MinhasTurmas() {
                         onClick={() => { setModalRedefinir(turma.id); setMenuAbertoId(null); }}
                         className="w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 font-semibold flex items-center gap-2"
                       >
-                        ⚠️ Redefinir Código
+                        Redefinir Código
                       </button>
                       <button 
                         onClick={() => alert(`Editar ${turma.nome}`)}
                         className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"
                       >
-                        ✏️ Editar Turma
+                        Editar Turma
                       </button>
                     </div>
                   )}
@@ -160,10 +160,10 @@ export default function MinhasTurmas() {
 
               <div className="flex items-center gap-4 text-xs text-slate-400 mb-5">
                 <span className="flex items-center gap-1.5">
-                  👤 {turma.alunos} Alunos
+                  {turma.alunos} Alunos
                 </span>
                 <span className="flex items-center gap-1.5">
-                  📝 {turma.tarefas} Tarefas
+                  {turma.tarefas} Tarefas
                 </span>
               </div>
 
@@ -178,7 +178,6 @@ export default function MinhasTurmas() {
                   <span className="text-2xl font-mono font-bold text-blue-400 tracking-wider group-hover:scale-105 transition-transform">
                     {turma.codigo}
                   </span>
-                  <span className="text-xs text-slate-500 group-hover:text-blue-400">📋</span>
                 </div>
               </div>
             </div>
@@ -188,7 +187,7 @@ export default function MinhasTurmas() {
                 onClick={() => alert(`Entrando na turma: ${turma.nome}`)}
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-blue-600/10"
               >
-                Entrar na Turma →
+                Entrar na Turma
               </button>
               
               <button
@@ -207,7 +206,7 @@ export default function MinhasTurmas() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-[#141d2b] border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-4 text-center shadow-2xl">
             <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center text-xl mx-auto font-bold">
-              ⚠️
+              !
             </div>
             <h3 className="text-lg font-bold text-white">Gerar novo código?</h3>
             <p className="text-xs text-slate-400 leading-relaxed">

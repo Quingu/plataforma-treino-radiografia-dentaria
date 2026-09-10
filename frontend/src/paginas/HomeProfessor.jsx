@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import LogoMarca from '../componentes/LogoMarca';
+import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 
 export default function HomeProfessor({ usuario, aoSair }) {
   const [turmas, setTurmas] = useState([]);
@@ -328,7 +329,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-white">Editar Perfil</h3>
-              <button onClick={() => setModalPerfilAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
+              <button onClick={() => setModalPerfilAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
 
             <form onSubmit={handleValidarPerfil} className="space-y-4">
@@ -377,15 +378,12 @@ export default function HomeProfessor({ usuario, aoSair }) {
                     placeholder="Deixe em branco para manter a atual"
                     value={dadosProfessor.novaSenha}
                     onChange={(e) => setDadosProfessor({ ...dadosProfessor, novaSenha: e.target.value })}
-                    className="w-full px-4 py-2.5 pr-24 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-2.5 pr-12 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setMostrarSenha(!mostrarSenha)}
-                    className="absolute right-3 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {mostrarSenha ? "Ocultar" : "Mostrar"}
-                  </button>
+                  <BotaoOlhoSenha
+                    visivel={mostrarSenha}
+                    aoAlternar={() => setMostrarSenha(!mostrarSenha)}
+                  />
                 </div>
               </div>
 
@@ -397,15 +395,12 @@ export default function HomeProfessor({ usuario, aoSair }) {
                     placeholder="Repita a nova senha"
                     value={dadosProfessor.confirmarSenha}
                     onChange={(e) => setDadosProfessor({ ...dadosProfessor, confirmarSenha: e.target.value })}
-                    className="w-full px-4 py-2.5 pr-24 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
+                    className="w-full px-4 py-2.5 pr-12 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
-                    className="absolute right-3 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {mostrarConfirmarSenha ? "Ocultar" : "Mostrar"}
-                  </button>
+                  <BotaoOlhoSenha
+                    visivel={mostrarConfirmarSenha}
+                    aoAlternar={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                  />
                 </div>
               </div>
 
@@ -475,7 +470,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-white">Nova Turma</h3>
-              <button onClick={() => setModalCriarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
+              <button onClick={() => setModalCriarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
             <form onSubmit={handleCriarTurma} className="space-y-4">
               <div>
@@ -500,7 +495,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-white">Editar Turma</h3>
-              <button onClick={() => setModalEditarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
+              <button onClick={() => setModalEditarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
             <form onSubmit={handleSalvarEdicao} className="space-y-4">
               <div>
@@ -543,7 +538,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
                 <h3 className="text-lg font-bold text-white">Alunos da Turma</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{turmaSelecionada?.nome}</p>
               </div>
-              <button onClick={() => setModalAlunosAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
+              <button onClick={() => setModalAlunosAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {alunosExemplo.map((aluno) => (
