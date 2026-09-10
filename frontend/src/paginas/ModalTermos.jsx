@@ -25,12 +25,10 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
           
           <button 
             onClick={aoFechar}
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-800"
+            className="text-slate-400 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-800 text-lg leading-none"
             title="Fechar"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            x
           </button>
         </div>
 
