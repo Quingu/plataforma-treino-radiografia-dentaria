@@ -171,9 +171,34 @@ export async function criarTurma({ nome }) {
   });
 }
 
+export async function editarTurma(id, { nome }) {
+  return requisicaoAutenticada(`/turmas/${id}/`, {
+    method: 'PATCH',
+    body: JSON.stringify({ nome }),
+  });
+}
+
+export async function excluirTurma(id) {
+  return requisicaoAutenticada(`/turmas/${id}/`, {
+    method: 'DELETE',
+  });
+}
+
 export async function listarTarefas() {
   const dados = await requisicaoAutenticada('/tarefas/tarefas/');
   return Array.isArray(dados) ? dados : dados.results || [];
+}
+
+export async function criarTarefa({ casoClinico, turma, instrucoes, coordenadasGabarito }) {
+  return requisicaoAutenticada('/tarefas/tarefas/', {
+    method: 'POST',
+    body: JSON.stringify({
+      caso_clinico: casoClinico,
+      turma,
+      instrucoes,
+      coordenadas_gabarito: coordenadasGabarito,
+    }),
+  });
 }
 
 export async function listarCasosClinicos() {
@@ -203,6 +228,12 @@ export async function criarCasoClinico({ titulo, descricao, regiaoAnatomica, ima
   }
 
   return lerResposta(resposta);
+}
+
+export async function excluirCasoClinico(id) {
+  return requisicaoAutenticada(`/radiografias/radiografias/${id}/`, {
+    method: 'DELETE',
+  });
 }
 
 export function resolverUrlImagem(caminho) {

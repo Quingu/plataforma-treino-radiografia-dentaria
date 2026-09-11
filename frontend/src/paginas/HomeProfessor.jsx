@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import LogoMarca from '../componentes/LogoMarca';
 import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
-import { criarCasoClinico, criarTurma, listarCasosClinicos, listarTarefas, listarTurmas, resolverUrlImagem } from '../services/api';
+import { criarCasoClinico, criarTarefa, criarTurma, editarTurma, excluirCasoClinico, excluirTurma, listarCasosClinicos, listarTarefas, listarTurmas, resolverUrlImagem } from '../services/api';
 
 export default function HomeProfessor({ usuario, aoSair }) {
   const [abaAtual, setAbaAtual] = useState('dashboard');
@@ -13,8 +13,8 @@ export default function HomeProfessor({ usuario, aoSair }) {
 
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [modalEditarAberto, setModalEditarAberto] = useState(false);
-  const [modalAlunosAberto, setModalAlunosAberto] = useState(false);
-  const [modalExcluirAberto, setModalExcluirAberto] = useState(false);
+  const [confirmarExcluirTurma, setConfirmarExcluirTurma] = useState(false);
+  const [confirmarExcluirImagem, setConfirmarExcluirImagem] = useState(false);
 
   const [menuPerfilAberto, setMenuPerfilAberto] = useState(false);
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
@@ -35,23 +35,28 @@ export default function HomeProfessor({ usuario, aoSair }) {
 
   const fileInputRef = useRef(null);
   const radiografiaInputRef = useRef(null);
+  const imagemTarefaRef = useRef(null);
 
   const [nomeTurma, setNomeTurma] = useState('');
   const [disciplina, setDisciplina] = useState('');
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
   const [copiadoId, setCopiadoId] = useState(null);
-  const [menuAbertoId, setMenuAbertoId] = useState(null);
+  const [menuTurmaAbertoId, setMenuTurmaAbertoId] = useState(null);
   const [buscaImagem, setBuscaImagem] = useState('');
   const [fonteImagem, setFonteImagem] = useState('todos');
   const [categoriaImagem, setCategoriaImagem] = useState('todos');
   const [casoSelecionadoId, setCasoSelecionadoId] = useState(null);
+  const [imagensComErro, setImagensComErro] = useState([]);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
-
-  const alunosExemplo = [
-    { id: 1, nome: 'Ana Beatriz Souza', email: 'ana.souza@email.com' },
-    { id: 2, nome: 'Lucas Gabriel Lima', email: 'lucas.lima@email.com' },
-    { id: 3, nome: 'Matheus Oliveira', email: 'matheus.o@email.com' }
-  ];
+  const [modoTarefa, setModoTarefa] = useState('biblioteca');
+  const [gabarito, setGabarito] = useState(null);
+  const [desenhoInicio, setDesenhoInicio] = useState(null);
+  const [salvandoTarefa, setSalvandoTarefa] = useState(false);
+  const [dadosTarefa, setDadosTarefa] = useState({
+    nomeEstrutura: '',
+    turmaId: '',
+    instrucoes: '',
+  });
 
   const carregarDadosProfessor = async () => {
     setCarregandoDados(true);
@@ -67,7 +72,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
       setTurmas(turmasApi.map((turma) => ({
         ...turma,
         codigo: turma.codigo_convite || turma.codigo || '',
-        disciplina: turma.disciplina || 'Radiologia Odontológica',
+        periodo: turma.periodo || turma.disciplina || '2026.2',
         qtdAlunos: turma.qtdAlunos || turma.total_alunos || 0,
         atividadesAtivas: turma.atividadesAtivas || turma.total_tarefas || 0,
         mostrarRedefinir: false,
@@ -92,6 +97,10 @@ export default function HomeProfessor({ usuario, aoSair }) {
     }, {});
   }, [casos]);
 
+  const casoSelecionado = useMemo(() => {
+    return casos.find((caso) => caso.id === casoSelecionadoId) || null;
+  }, [casoSelecionadoId, casos]);
+
   const tarefasRecentes = useMemo(() => {
     return [...tarefas]
       .sort((a, b) => new Date(b.criado_em || 0) - new Date(a.criado_em || 0))
@@ -99,10 +108,10 @@ export default function HomeProfessor({ usuario, aoSair }) {
   }, [tarefas]);
 
   const metricas = useMemo(() => ([
-    ['Turmas Ativas', turmas.length, 'Total cadastrado na plataforma', 'T'],
-    ['Tarefas Pendentes', tarefas.length, 'Aguardando acompanhamento', 'P'],
-    ['Casos Cadastrados', casos.length, 'Casos disponíveis para treino', 'C'],
-    ['Precisão Média', '0%', 'Será calculada pelas resoluções', '%'],
+    ['Turmas Ativas', turmas.length, 'Total cadastrado na plataforma'],
+    ['Tarefas Pendentes', tarefas.length, 'Aguardando acompanhamento'],
+    ['Casos Cadastrados', casos.length, 'Casos disponíveis para treino'],
+    ['Precisão Média', '0%', 'Será calculada pelas resoluções'],
   ]), [turmas, tarefas, casos]);
 
   const filtrosFonte = [
@@ -119,12 +128,25 @@ export default function HomeProfessor({ usuario, aoSair }) {
     ['panoramica_normal', 'Panorâmicas Normais'],
   ];
 
+  const pegarNumeroRadiografia = (caso) => {
+    const texto = `${caso.titulo || ''} ${caso.imagem || ''} ${caso.imagem_url || ''}`;
+    const numero = texto.match(/(\d+)\.(jpg|jpeg|png|webp)|#(\d+)/i);
+    return Number(numero?.[1] || numero?.[3] || 0);
+  };
+
   const identificarFonte = (caso) => {
-    const texto = `${caso.titulo || ''} ${caso.descricao || ''}`.toLowerCase();
+    const texto = `${caso.titulo || ''} ${caso.descricao || ''} ${caso.imagem || ''} ${caso.imagem_url || ''}`.toLowerCase();
     if (texto.includes('tufs')) return 'Tufs Database';
     if (texto.includes('kaggle')) return 'Kaggle Radiology';
+    const numero = pegarNumeroRadiografia(caso);
+    if (numero > 0 && numero <= 500) return 'Tufs Database';
+    if (numero > 500) return 'Kaggle Radiology';
     return 'Arquivo próprio';
   };
+
+  const exibirOrigem = (caso) => (
+    identificarFonte(caso) === 'Arquivo próprio' ? 'Arquivo próprio' : 'Biblioteca'
+  );
 
   const identificarCategoria = (caso) => {
     const texto = `${caso.titulo || ''} ${caso.descricao || ''} ${caso.regiao_anatomica || ''}`.toLowerCase();
@@ -146,10 +168,11 @@ export default function HomeProfessor({ usuario, aoSair }) {
       const bateFonte = fonteImagem === 'todos' || fonte.includes(fonteImagem);
       const categoriaNormalizada = categoria.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_');
       const bateCategoria = categoriaImagem === 'todos' || categoriaNormalizada === categoriaImagem;
+      const imagemDisponivel = !imagensComErro.includes(caso.id);
 
-      return bateBusca && bateFonte && bateCategoria;
+      return bateBusca && bateFonte && bateCategoria && imagemDisponivel;
     });
-  }, [buscaImagem, categoriaImagem, casos, fonteImagem]);
+  }, [buscaImagem, categoriaImagem, casos, fonteImagem, imagensComErro]);
 
   const primeiroNome = dadosProfessor.nomeCompleto.split(' ')[0] || 'Professor';
 
@@ -197,6 +220,115 @@ export default function HomeProfessor({ usuario, aoSair }) {
     }
   };
 
+  const abrirConfirmacaoExcluirImagem = () => {
+    if (!casoSelecionado) return;
+    setConfirmarExcluirImagem(true);
+  };
+
+  const handleExcluirImagem = async () => {
+    if (!casoSelecionado) return;
+
+    try {
+      await excluirCasoClinico(casoSelecionado.id);
+      setCasos(casos.filter((caso) => caso.id !== casoSelecionado.id));
+      setImagensComErro(imagensComErro.filter((id) => id !== casoSelecionado.id));
+      setCasoSelecionadoId(null);
+      setConfirmarExcluirImagem(false);
+    } catch (err) {
+      alert(err.message || 'Não foi possível excluir a radiografia.');
+    }
+  };
+
+  const abrirEstudioTarefa = () => {
+    if (!casoSelecionado) return;
+
+    setDadosTarefa({
+      nomeEstrutura: '',
+      turmaId: turmas[0]?.id ? String(turmas[0].id) : '',
+      instrucoes: '',
+    });
+    setGabarito(null);
+    setModoTarefa('estudio');
+  };
+
+  const voltarParaBiblioteca = () => {
+    setModoTarefa('biblioteca');
+    setGabarito(null);
+    setDesenhoInicio(null);
+  };
+
+  const pegarPontoDaImagem = (e) => {
+    const area = imagemTarefaRef.current;
+    if (!area) return { x: 0, y: 0 };
+
+    const rect = area.getBoundingClientRect();
+    const x = Math.min(Math.max(((e.clientX - rect.left) / rect.width) * 100, 0), 100);
+    const y = Math.min(Math.max(((e.clientY - rect.top) / rect.height) * 100, 0), 100);
+    return { x, y };
+  };
+
+  const iniciarDesenho = (e) => {
+    const ponto = pegarPontoDaImagem(e);
+    setDesenhoInicio(ponto);
+    setGabarito({ x: ponto.x, y: ponto.y, width: 0, height: 0 });
+  };
+
+  const atualizarDesenho = (e) => {
+    if (!desenhoInicio) return;
+
+    const ponto = pegarPontoDaImagem(e);
+    setGabarito({
+      x: Math.min(desenhoInicio.x, ponto.x),
+      y: Math.min(desenhoInicio.y, ponto.y),
+      width: Math.abs(ponto.x - desenhoInicio.x),
+      height: Math.abs(ponto.y - desenhoInicio.y),
+    });
+  };
+
+  const finalizarDesenho = () => {
+    setDesenhoInicio(null);
+  };
+
+  const limparDesenho = () => {
+    setGabarito(null);
+    setDesenhoInicio(null);
+  };
+
+  const handleSalvarTarefa = async (e) => {
+    e.preventDefault();
+    if (!casoSelecionado || !dadosTarefa.turmaId || !dadosTarefa.instrucoes.trim() || !gabarito?.width || !gabarito?.height) return;
+
+    setSalvandoTarefa(true);
+
+    try {
+      const tarefaCriada = await criarTarefa({
+        casoClinico: casoSelecionado.id,
+        turma: dadosTarefa.turmaId,
+        instrucoes: `${dadosTarefa.nomeEstrutura || 'Estrutura marcada'}\n\n${dadosTarefa.instrucoes}`,
+        coordenadasGabarito: {
+          estrutura: dadosTarefa.nomeEstrutura || 'Estrutura marcada',
+          x: Number(gabarito.x.toFixed(2)),
+          y: Number(gabarito.y.toFixed(2)),
+          width: Number(gabarito.width.toFixed(2)),
+          height: Number(gabarito.height.toFixed(2)),
+        },
+      });
+
+      setTarefas(prev => [tarefaCriada, ...prev]);
+      setTurmas(turmas.map((turma) => (
+        String(turma.id) === String(dadosTarefa.turmaId)
+          ? { ...turma, atividadesAtivas: (turma.atividadesAtivas || 0) + 1 }
+          : turma
+      )));
+      voltarParaBiblioteca();
+      setAbaAtual('dashboard');
+    } catch (err) {
+      alert(err.message || 'Não foi possível criar a tarefa.');
+    } finally {
+      setSalvandoTarefa(false);
+    }
+  };
+
   const handleValidarPerfil = (e) => {
     e.preventDefault();
     if (dadosProfessor.novaSenha && dadosProfessor.novaSenha !== dadosProfessor.confirmarSenha) {
@@ -224,12 +356,14 @@ export default function HomeProfessor({ usuario, aoSair }) {
     setTimeout(() => setCopiadoId(null), 2000);
   };
 
-  const handleGerarNovoCodigo = (id) => {
-    const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const nums = '0123456789';
-    const novoCodigo = `${letras[Math.floor(Math.random()*26)]}${letras[Math.floor(Math.random()*26)]}${letras[Math.floor(Math.random()*26)]}-${nums[Math.floor(Math.random()*10)]}${letras[Math.floor(Math.random()*26)]}${nums[Math.floor(Math.random()*10)]}${letras[Math.floor(Math.random()*26)]}`;
+  const abrirNovaTurma = () => {
+    setNomeTurma('');
+    setDisciplina('2026.2');
+    setModalCriarAberto(true);
+  };
 
-    setTurmas(turmas.map(t => t.id === id ? { ...t, codigo: novoCodigo, mostrarRedefinir: false } : t));
+  const formatarCodigoTurma = (codigo = '') => {
+    return codigo.split('').join(' ');
   };
 
   const handleCriarTurma = async (e) => {
@@ -240,7 +374,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
       const turmaCriada = await criarTurma({ nome: nomeTurma });
       const novaTurma = {
         ...turmaCriada,
-        disciplina: disciplina || 'Radiologia Odontológica',
+        periodo: disciplina || '2026.2',
         codigo: turmaCriada.codigo_convite || turmaCriada.codigo || '',
         qtdAlunos: 0,
         atividadesAtivas: 0,
@@ -256,48 +390,56 @@ export default function HomeProfessor({ usuario, aoSair }) {
     }
   };
 
-  const abrirEditar = (turma) => {
+  const abrirEditarTurma = (turma) => {
     setTurmaSelecionada(turma);
     setNomeTurma(turma.nome);
-    setDisciplina(turma.disciplina);
+    setDisciplina(turma.periodo || '2026.2');
     setModalEditarAberto(true);
-    setMenuAbertoId(null);
+    setMenuTurmaAbertoId(null);
   };
 
-  const handleSalvarEdicao = (e) => {
+  const handleEditarTurma = async (e) => {
     e.preventDefault();
     if (!nomeTurma.trim() || !turmaSelecionada) return;
 
-    setTurmas(turmas.map(t => t.id === turmaSelecionada.id ? { ...t, nome: nomeTurma, disciplina } : t));
-    setModalEditarAberto(false);
-    setTurmaSelecionada(null);
-    setNomeTurma('');
-    setDisciplina('');
-  };
-
-  const toggleAlertaRedefinir = (id) => {
-    setTurmas(turmas.map(t => t.id === id ? { ...t, mostrarRedefinir: !t.mostrarRedefinir } : t));
-    setMenuAbertoId(null);
-  };
-
-  const abrirExcluir = (turma) => {
-    setTurmaSelecionada(turma);
-    setModalExcluirAberto(true);
-    setMenuAbertoId(null);
-  };
-
-  const handleConfirmarExclusao = () => {
-    if (turmaSelecionada) {
-      setTurmas(turmas.filter(t => t.id !== turmaSelecionada.id));
-      setModalExcluirAberto(false);
+    try {
+      const turmaAtualizada = await editarTurma(turmaSelecionada.id, { nome: nomeTurma });
+      setTurmas(turmas.map((turma) => (
+        turma.id === turmaSelecionada.id
+          ? {
+              ...turma,
+              ...turmaAtualizada,
+              codigo: turmaAtualizada.codigo_convite || turma.codigo,
+              periodo: disciplina || turma.periodo || '2026.2',
+            }
+          : turma
+      )));
+      setModalEditarAberto(false);
       setTurmaSelecionada(null);
+      setNomeTurma('');
+      setDisciplina('');
+    } catch (err) {
+      alert(err.message || 'Não foi possível editar a turma.');
     }
   };
 
-  const abrirVerAlunos = (turma) => {
+  const abrirConfirmacaoExcluirTurma = (turma) => {
     setTurmaSelecionada(turma);
-    setModalAlunosAberto(true);
-    setMenuAbertoId(null);
+    setConfirmarExcluirTurma(true);
+    setMenuTurmaAbertoId(null);
+  };
+
+  const handleExcluirTurma = async () => {
+    if (!turmaSelecionada) return;
+
+    try {
+      await excluirTurma(turmaSelecionada.id);
+      setTurmas(turmas.filter((turma) => turma.id !== turmaSelecionada.id));
+      setConfirmarExcluirTurma(false);
+      setTurmaSelecionada(null);
+    } catch (err) {
+      alert(err.message || 'Não foi possível excluir a turma.');
+    }
   };
 
   const renderAba = (aba, texto) => (
@@ -472,17 +614,14 @@ export default function HomeProfessor({ usuario, aoSair }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {metricas.map(([titulo, valor, detalhe, marcador]) => (
-                <div key={titulo} className="bg-[#111c2c] border border-slate-700/80 rounded-2xl p-6 min-h-36 flex items-start justify-between">
+              {metricas.map(([titulo, valor, detalhe]) => (
+                <div key={titulo} className="bg-[#111c2c] border border-slate-700/80 rounded-2xl p-6 min-h-36">
                   <div className="space-y-6">
                     <p className="text-sm text-slate-300">{titulo}</p>
                     <div>
                       <p className="text-3xl font-black text-white">{carregandoDados ? '...' : valor}</p>
                       <p className="text-xs text-blue-300 mt-2">{detalhe}</p>
                     </div>
-                  </div>
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xs font-bold">
-                    {marcador}
                   </div>
                 </div>
               ))}
@@ -501,6 +640,142 @@ export default function HomeProfessor({ usuario, aoSair }) {
         )}
 
         {abaAtual === 'tarefas' && (
+          modoTarefa === 'estudio' && casoSelecionado ? (
+            <div className="min-h-[70vh] -m-6 lg:-m-10 bg-[#0d131d]">
+              <div className="bg-[#101726] border-b border-slate-800/80 px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={voltarParaBiblioteca}
+                  className="flex items-center gap-3 text-white font-bold text-lg cursor-pointer hover:text-blue-300"
+                >
+                  <span className="text-2xl leading-none">←</span>
+                  <span>Estúdio de Anotação & Gabarito</span>
+                </button>
+                <span className="px-4 py-2 rounded-lg bg-[#182234] text-slate-400 text-sm font-semibold">Rascunho não salvo</span>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px]">
+                <div className="p-6 lg:p-8 space-y-5">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <button
+                      type="button"
+                      onClick={voltarParaBiblioteca}
+                      className="px-5 py-3 bg-[#111c2c] border border-slate-700/80 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer self-start"
+                    >
+                      Trocar imagem
+                    </button>
+                    <p className="text-sm text-slate-400">Clique e arraste para desenhar o retângulo do gabarito sobre a radiografia.</p>
+                  </div>
+
+                  <div
+                    ref={imagemTarefaRef}
+                    onPointerDown={iniciarDesenho}
+                    onPointerMove={atualizarDesenho}
+                    onPointerUp={finalizarDesenho}
+                    onPointerLeave={finalizarDesenho}
+                    className="relative overflow-hidden rounded-xl border border-slate-800 bg-black cursor-crosshair"
+                  >
+                    <img
+                      src={resolverUrlImagem(casoSelecionado.imagem_url || casoSelecionado.imagem)}
+                      alt={casoSelecionado.titulo}
+                      draggable="false"
+                      className="w-full max-h-[66vh] object-contain select-none pointer-events-none"
+                    />
+
+                    {gabarito && (
+                      <div
+                        className="absolute border-2 border-dashed border-blue-500 bg-blue-500/20"
+                        style={{
+                          left: `${gabarito.x}%`,
+                          top: `${gabarito.y}%`,
+                          width: `${gabarito.width}%`,
+                          height: `${gabarito.height}%`,
+                        }}
+                      >
+                        <span className="absolute left-2 top-2 text-[10px] font-bold text-blue-200 bg-slate-950/70 px-2 py-1 rounded">
+                          {dadosTarefa.nomeEstrutura || 'Gabarito'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <aside className="bg-[#111c2c] border-t xl:border-t-0 xl:border-l border-slate-800 p-6 lg:p-8">
+                  <form onSubmit={handleSalvarTarefa} className="space-y-5">
+                    <div>
+                      <h3 className="text-lg font-bold text-white">Dados da tarefa</h3>
+                      <p className="text-xs text-slate-400 mt-1">{casoSelecionado.titulo}</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nome da estrutura / patologia</label>
+                      <input
+                        type="text"
+                        value={dadosTarefa.nomeEstrutura}
+                        onChange={(e) => setDadosTarefa({ ...dadosTarefa, nomeEstrutura: e.target.value })}
+                        placeholder="Ex.: Dente 38 incluso"
+                        className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Selecionar turma</label>
+                      <select
+                        required
+                        value={dadosTarefa.turmaId}
+                        onChange={(e) => setDadosTarefa({ ...dadosTarefa, turmaId: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all"
+                      >
+                        <option value="">Escolha uma turma</option>
+                        {turmas.map((turma) => (
+                          <option key={turma.id} value={turma.id}>{turma.nome}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Instruções adicionais</label>
+                      <textarea
+                        required
+                        rows={4}
+                        value={dadosTarefa.instrucoes}
+                        onChange={(e) => setDadosTarefa({ ...dadosTarefa, instrucoes: e.target.value })}
+                        placeholder="Ex.: Localize a estrutura marcada e informe o diagnóstico."
+                        className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all resize-none"
+                      />
+                    </div>
+
+                    <div className="bg-[#0c1320] border border-slate-700/80 rounded-xl p-4 space-y-2">
+                      <h4 className="text-sm font-bold text-white">Dados do gabarito</h4>
+                      {gabarito?.width && gabarito?.height ? (
+                        <p className="text-sm text-slate-300">
+                          Eixo X: {gabarito.x.toFixed(1)}% a {(gabarito.x + gabarito.width).toFixed(1)}% | Eixo Y: {gabarito.y.toFixed(1)}% a {(gabarito.y + gabarito.height).toFixed(1)}%
+                        </p>
+                      ) : (
+                        <p className="text-sm text-slate-400">Desenhe o retângulo na radiografia.</p>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={limparDesenho}
+                      className="w-full py-3 bg-[#0d131d] border border-slate-700 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+                    >
+                      Limpar desenho
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={salvandoTarefa || !dadosTarefa.turmaId || !dadosTarefa.instrucoes.trim() || !gabarito?.width || !gabarito?.height}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {salvandoTarefa ? 'Salvando tarefa...' : 'Salvar gabarito e publicar tarefa'}
+                    </button>
+                  </form>
+                </aside>
+              </div>
+            </div>
+          ) : (
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-white">Tarefas</h2>
@@ -517,14 +792,32 @@ export default function HomeProfessor({ usuario, aoSair }) {
                   className="w-full lg:max-w-md px-4 py-3 bg-[#101927] border border-slate-700/80 rounded-xl text-white placeholder-slate-400 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 />
 
-                <button
-                  type="button"
-                  onClick={() => radiografiaInputRef.current?.click()}
-                  disabled={enviandoImagem}
-                  className="px-5 py-3 bg-[#0d131d] border border-slate-600/80 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {enviandoImagem ? 'Enviando arquivo...' : 'Fazer upload de arquivo próprio'}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={abrirConfirmacaoExcluirImagem}
+                    disabled={!casoSelecionado}
+                    className="px-5 py-3 bg-[#0d131d] border border-slate-600/80 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Excluir imagem
+                  </button>
+                  <button
+                    type="button"
+                    onClick={abrirEstudioTarefa}
+                    disabled={!casoSelecionado || turmas.length === 0}
+                    className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Criar tarefa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => radiografiaInputRef.current?.click()}
+                    disabled={enviandoImagem}
+                    className="px-5 py-3 bg-[#0d131d] border border-slate-600/80 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {enviandoImagem ? 'Enviando arquivo...' : 'Fazer upload de arquivo próprio'}
+                  </button>
+                </div>
                 <input
                   type="file"
                   accept="image/*"
@@ -577,9 +870,10 @@ export default function HomeProfessor({ usuario, aoSair }) {
                               <img
                                 src={imagemUrl}
                                 alt={caso.titulo}
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                onError={() => {
+                                  setImagensComErro(prev => (
+                                    prev.includes(caso.id) ? prev : [...prev, caso.id]
+                                  ));
                                 }}
                                 className={`w-full h-full object-cover transition-all ${selecionado ? 'opacity-45' : 'group-hover:opacity-80'}`}
                               />
@@ -600,7 +894,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
                           <div className="p-4 flex items-start justify-between gap-4">
                             <div>
                               <h3 className="font-bold text-white text-sm">{caso.titulo || `Caso ${String(caso.id).slice(0, 8)}`}</h3>
-                              <p className="text-xs text-blue-200 mt-1">Origem: {identificarFonte(caso)}</p>
+                              <p className="text-xs text-blue-200 mt-1">Origem: {exibirOrigem(caso)}</p>
                             </div>
                             <span className="text-xs text-blue-200 whitespace-nowrap">{identificarCategoria(caso)}</span>
                           </div>
@@ -612,100 +906,99 @@ export default function HomeProfessor({ usuario, aoSair }) {
               </div>
             </div>
           </div>
+          )
         )}
 
         {abaAtual === 'turmas' && (
-          turmas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-              <div className="bg-[#141d2b] border border-slate-800 rounded-2xl p-12 max-w-lg w-full flex flex-col items-center text-center shadow-2xl">
-                <div className="w-20 h-20 bg-[#0c1320] border border-slate-800 rounded-full flex items-center justify-center mb-6 text-blue-400 text-3xl font-bold">
-                  +
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-6">Crie uma turma</h2>
-                <button
-                  onClick={() => setModalCriarAberto(true)}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  <span>Nova Turma</span>
-                </button>
-              </div>
+          <div className="relative min-h-[62vh] pb-24 space-y-7">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Turmas</h2>
+              <p className="text-sm text-slate-400 mt-2">Crie turmas e compartilhe o código de acesso com seus alunos.</p>
             </div>
-          ) : (
-            <div className="space-y-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Minhas Turmas</h2>
-                  <p className="text-sm text-slate-400 mt-1">Gerencie seus grupos de alunos e códigos de acesso</p>
-                </div>
-                <button
-                  onClick={() => setModalCriarAberto(true)}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 cursor-pointer self-start sm:self-auto"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  <span>Nova Turma</span>
-                </button>
+
+            {turmas.length === 0 ? (
+              <div className="min-h-80 flex items-center justify-center text-center text-sm text-slate-400 border border-slate-800 rounded-2xl bg-[#111c2c]">
+                Nenhuma turma cadastrada ainda.
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {turmas.map((item) => (
-                  <div key={item.id} className="bg-[#141d2b] border border-slate-800/90 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-xl relative">
+                  <div key={item.id} className="bg-[#111c2c] border border-slate-700/80 rounded-2xl p-6 min-h-52 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <h3 className="text-base font-bold text-white leading-snug">{item.nome}</h3>
-                        <div className="relative">
-                          <button
-                            onClick={() => setMenuAbertoId(menuAbertoId === item.id ? null : item.id)}
-                            className="w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-slate-700/40"
-                            title="Opções da turma"
-                          >
-                            ...
-                          </button>
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div>
+                          <h3 className="text-base font-bold text-white leading-snug">{item.nome}</h3>
+                          <p className="text-sm text-slate-400 mt-4">Prof. {dadosProfessor.nomeCompleto}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-full bg-[#1a2536] text-xs font-bold text-white">
+                            {item.periodo || '2026.2'}
+                          </span>
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => setMenuTurmaAbertoId(menuTurmaAbertoId === item.id ? null : item.id)}
+                              className="w-8 h-8 rounded-full bg-[#1a2536] text-slate-300 hover:text-white hover:bg-slate-700 text-sm font-bold cursor-pointer"
+                              title="Configurações da turma"
+                            >
+                              ⚙️
+                            </button>
 
-                          {menuAbertoId === item.id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-[#0e1622] border border-slate-700 rounded-xl shadow-2xl z-20 py-2 text-xs">
-                              <button onClick={() => abrirEditar(item)} className="w-full px-4 py-2 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer">Editar Turma</button>
-                              <button onClick={() => abrirVerAlunos(item)} className="w-full px-4 py-2 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer">Ver Alunos</button>
-                              <button onClick={() => toggleAlertaRedefinir(item.id)} className="w-full px-4 py-2 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer">{item.mostrarRedefinir ? 'Ocultar Alerta' : 'Alerta de Redefinição'}</button>
-                              <div className="border-t border-slate-800 my-1"></div>
-                              <button onClick={() => abrirExcluir(item)} className="w-full px-4 py-2 text-left hover:bg-red-500/10 text-red-400 transition-colors cursor-pointer">Excluir Turma</button>
-                            </div>
-                          )}
+                            {menuTurmaAbertoId === item.id && (
+                              <div className="absolute right-0 mt-2 w-40 bg-[#0e1622] border border-slate-700 rounded-xl shadow-2xl z-20 py-2 text-xs">
+                                <button
+                                  type="button"
+                                  onClick={() => abrirEditarTurma(item)}
+                                  className="w-full px-4 py-2 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer"
+                                >
+                                  Editar turma
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => abrirConfirmacaoExcluirTurma(item)}
+                                  className="w-full px-4 py-2 text-left hover:bg-red-500/10 text-red-400 transition-colors cursor-pointer"
+                                >
+                                  Excluir turma
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-slate-400 mb-5">
+                      <div className="flex items-center gap-2 text-sm text-blue-400 mb-4">
+                        <span className="text-lg leading-none">+</span>
                         <span>{item.qtdAlunos} alunos</span>
-                        <span>{item.atividadesAtivas} tarefas ativas</span>
-                      </div>
-
-                      <div className="bg-[#0b1019] border border-slate-800/90 rounded-xl p-4 text-center mb-4">
-                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block mb-1">CÓDIGO DE ACESSO</span>
-                        <span className="text-2xl font-mono font-bold text-blue-400 tracking-wider">{item.codigo}</span>
                       </div>
                     </div>
 
-                    <div className="space-y-3 pt-1">
+                    <div className="border border-dashed border-blue-500/60 bg-[#0b1019]/70 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest block mb-1">Código da turma</span>
+                        <span className="text-lg font-mono font-black text-white tracking-widest">{formatarCodigoTurma(item.codigo)}</span>
+                      </div>
                       <button
+                        type="button"
                         onClick={() => handleCopiar(item.id, item.codigo)}
-                        className="w-full py-2.5 bg-[#1a2536] hover:bg-slate-700/80 text-slate-200 text-xs font-semibold rounded-xl transition-all flex items-center justify-center cursor-pointer border border-slate-700/50"
+                        className="px-3 py-2 rounded-lg text-xs font-semibold text-blue-200 hover:bg-slate-800 cursor-pointer"
                       >
-                        {copiadoId === item.id ? <span className="text-emerald-400 font-bold">Código Copiado!</span> : <span>Copiar Código</span>}
+                        {copiadoId === item.id ? 'Copiado' : 'Copiar'}
                       </button>
-
-                      {item.mostrarRedefinir && (
-                        <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-left space-y-2">
-                          <div className="text-red-400 font-semibold text-xs">Redefinir Código</div>
-                          <p className="text-[11px] text-slate-400 leading-tight">Use caso o código tenha vazado. O código anterior será invalidado imediatamente.</p>
-                          <button onClick={() => handleGerarNovoCodigo(item.id)} className="w-full py-2 bg-red-500/90 hover:bg-red-600 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer">Gerar Novo Código</button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )
+            )}
+
+            <button
+              type="button"
+              onClick={abrirNovaTurma}
+              className="fixed right-8 bottom-8 px-6 py-4 rounded-full bg-blue-500 hover:bg-blue-400 text-slate-950 font-semibold text-sm shadow-2xl shadow-blue-900/40 flex items-center gap-3 cursor-pointer z-20"
+            >
+              <span className="text-xl leading-none">+</span>
+              <span>Nova Turma</span>
+            </button>
+          </div>
         )}
       </main>
 
@@ -853,22 +1146,25 @@ export default function HomeProfessor({ usuario, aoSair }) {
       {modalCriarAberto && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white">Nova Turma</h3>
+            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-white">Nova turma</h3>
+                <p className="text-sm text-slate-400 mt-1">Um código de 6 dígitos será gerado automaticamente para os alunos.</p>
+              </div>
               <button onClick={() => setModalCriarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
             <form onSubmit={handleCriarTurma} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nome da Turma</label>
-                <input type="text" required placeholder="Ex: Anatomia Dental & Imaginologia - 3º Sem" value={nomeTurma} onChange={(e) => setNomeTurma(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nome da turma</label>
+                <input type="text" required placeholder="Ex.: Radiologia Odontológica III" value={nomeTurma} onChange={(e) => setNomeTurma(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Disciplina / Módulo</label>
-                <input type="text" placeholder="Ex: Radiologia II" value={disciplina} onChange={(e) => setDisciplina(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Período</label>
+                <input type="text" placeholder="2026.2" value={disciplina} onChange={(e) => setDisciplina(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setModalCriarAberto(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Cancelar</button>
-                <button type="submit" className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Salvar Turma</button>
+                <button type="submit" className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Criar turma</button>
               </div>
             </form>
           </div>
@@ -878,66 +1174,86 @@ export default function HomeProfessor({ usuario, aoSair }) {
       {modalEditarAberto && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white">Editar Turma</h3>
+            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-white">Editar turma</h3>
+                <p className="text-sm text-slate-400 mt-1">Altere os dados principais da turma.</p>
+              </div>
               <button onClick={() => setModalEditarAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
             </div>
-            <form onSubmit={handleSalvarEdicao} className="space-y-4">
+            <form onSubmit={handleEditarTurma} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Nome da Turma</label>
-                <input type="text" required value={nomeTurma} onChange={(e) => setNomeTurma(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nome da turma</label>
+                <input type="text" required value={nomeTurma} onChange={(e) => setNomeTurma(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Disciplina / Módulo</label>
-                <input type="text" value={disciplina} onChange={(e) => setDisciplina(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Período</label>
+                <input type="text" placeholder="2026.2" value={disciplina} onChange={(e) => setDisciplina(e.target.value)} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setModalEditarAberto(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Cancelar</button>
-                <button type="submit" className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Atualizar</button>
+                <button type="submit" className="w-1/2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Salvar</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {modalExcluirAberto && (
+      {confirmarExcluirImagem && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
-            <h3 className="text-lg font-bold text-white">Excluir Turma</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Tem certeza de que deseja excluir a turma <strong className="text-slate-200">{turmaSelecionada?.nome}</strong>? Esta ação não poderá ser desfeita.
+            <h3 className="text-lg font-bold text-white">Excluir imagem</h3>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Deseja realmente excluir a radiografia <strong className="text-white">{casoSelecionado?.titulo}</strong>?
             </p>
-            <div className="pt-3 flex gap-3">
-              <button type="button" onClick={() => setModalExcluirAberto(false)} className="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Cancelar</button>
-              <button type="button" onClick={handleConfirmarExclusao} className="w-1/2 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Sim, Excluir</button>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Se ela já estiver ligada a uma tarefa, o sistema não vai permitir a exclusão.
+            </p>
+            <div className="flex gap-3 w-full pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmarExcluirImagem(false)}
+                className="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleExcluirImagem}
+                className="w-1/2 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Excluir
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {modalAlunosAberto && (
+      {confirmarExcluirTurma && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div>
-                <h3 className="text-lg font-bold text-white">Alunos da Turma</h3>
-                <p className="text-xs text-slate-400 mt-0.5">{turmaSelecionada?.nome}</p>
-              </div>
-              <button onClick={() => setModalAlunosAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
-            </div>
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {alunosExemplo.map((aluno) => (
-                <div key={aluno.id} className="bg-[#0c1320] border border-slate-800 rounded-xl p-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-white">{aluno.nome}</p>
-                    <p className="text-[11px] text-slate-400">{aluno.email}</p>
-                  </div>
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium">Ativo</span>
-                </div>
-              ))}
-            </div>
-            <div className="pt-2">
-              <button type="button" onClick={() => setModalAlunosAberto(false)} className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Fechar</button>
+          <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-bold text-white">Excluir turma</h3>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Tem certeza que deseja excluir a turma <strong className="text-white">{turmaSelecionada?.nome}</strong>?
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Essa ação remove a turma e o código de acesso dos alunos.
+            </p>
+            <div className="flex gap-3 w-full pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmarExcluirTurma(false)}
+                className="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleExcluirTurma}
+                className="w-1/2 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Excluir
+              </button>
             </div>
           </div>
         </div>
