@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from users.models.usuario import Usuario
+from django.core.validators import FileExtensionValidator
 
 class RegiaoAnatomica(models.TextChoices):
     MAXILA = 'maxila', 'Maxila'
@@ -22,6 +23,13 @@ class CasoClinico(models.Model):
         verbose_name='Região Anatômica'
     )
 
+
+    modelo_3d = models.FileField(
+            upload_to='modelos_3d/',
+            validators=[FileExtensionValidator(allowed_extensions=['glb'])],
+            null=True,
+            blank=True
+        )
     # Separa os uploads por ano e mês
     imagem = models.ImageField(upload_to='radiografias/%Y/%m/', verbose_name='Arquivo de Imagem')
     

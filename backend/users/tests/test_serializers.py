@@ -4,7 +4,7 @@ from users.serializers.registro_serializers import SerializadorDeUsuario
 @pytest.mark.django_db
 class TesteDoSerializadorDeUsuario:
     
-    def teste_serializador_valida_dados_corretamente(self):
+    def test_serializador_valida_dados_corretamente(self):
         dados = {
             'email': 'aluno.teste@email.com',
             'nome': 'Aluno Teste',
@@ -21,7 +21,7 @@ class TesteDoSerializadorDeUsuario:
         assert usuario.nome == dados['nome']
         assert usuario.perfil == dados['tipo'] 
 
-    def teste_serializador_nao_retorna_senha_no_output(self):
+    def test_serializador_nao_retorna_senha_no_output(self):
         dados = {
             'email': 'aluno2.teste@email.com',
             'nome': 'Aluno Teste Dois',

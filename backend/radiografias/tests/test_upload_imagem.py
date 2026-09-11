@@ -13,7 +13,7 @@ class TesteUploadCasoClinico:
         self.aluno = Usuario.objects.create_user(email='aluno@teste.com', password='123', perfil='aluno')
         self.url = reverse('listar-criar-casos')
 
-    def teste_professor_consegue_fazer_upload_de_caso_clinico(self):
+    def test_professor_consegue_fazer_upload_de_caso_clinico(self):
         self.cliente.force_authenticate(user=self.professor)
         # Cria uma imagem de 1 pixel em memória RAM
         imagem_falsa = SimpleUploadedFile(
@@ -37,7 +37,7 @@ class TesteUploadCasoClinico:
         caso_salvo = CasoClinico.objects.first()
         assert caso_salvo.professor == self.professor
 
-    def teste_aluno_eh_bloqueado_ao_tentar_fazer_upload(self):
+    def test_aluno_eh_bloqueado_ao_tentar_fazer_upload(self):
         self.cliente.force_authenticate(user=self.aluno)
         
         dados = {'titulo': 'Tentativa Ilegal'}
@@ -48,7 +48,7 @@ class TesteUploadCasoClinico:
 
 
 
-    def teste_usuario_consegue_listar_e_detalhar_radiografias(self):
+    def test_usuario_consegue_listar_e_detalhar_radiografias(self):
         self.cliente.force_authenticate(user=self.aluno)
         caso = CasoClinico.objects.create(
             titulo="Cisto Radicular",

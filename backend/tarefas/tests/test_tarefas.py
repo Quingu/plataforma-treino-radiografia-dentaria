@@ -21,7 +21,7 @@ class TesteCriacaoTarefa:
         # comoo a rota sera nomeada
         self.url = reverse('listar-criar-tarefas')
 
-    def teste_professor_cria_tarefa_com_gabarito(self):
+    def test_professor_cria_tarefa_com_gabarito(self):
         self.cliente.force_authenticate(user=self.professor)
         
         dados = {
@@ -40,7 +40,7 @@ class TesteCriacaoTarefa:
         assert tarefa_salva.coordenadas_gabarito['x_min'] == 150
 
 
-    def teste_aluno_eh_bloqueado_ao_tentar_criar_tarefa(self):
+    def test_aluno_eh_bloqueado_ao_tentar_criar_tarefa(self):
         self.cliente.force_authenticate(user=self.aluno)
         
         dados = {
@@ -53,7 +53,7 @@ class TesteCriacaoTarefa:
         resposta = self.cliente.post(self.url, dados, format='json')
         assert resposta.status_code == 403  # Forbidden
         
-    def teste_aluno_consegue_enviar_resolucao_da_tarefa(self):
+    def test_aluno_consegue_enviar_resolucao_da_tarefa(self):
         tarefa = Tarefa.objects.create(
             caso_clinico=self.caso,
             turma=self.turma,

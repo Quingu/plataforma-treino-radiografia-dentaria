@@ -23,7 +23,7 @@ class TesteRecuperacaoDeSenha:
         self.url_solicitar = reverse('solicitar-recuperacao')
         self.url_redefinir = reverse('redefinir-senha')
 
-    def teste_solicitar_recuperacao_com_email_valido_gera_token_e_envia_email(self):
+    def test_solicitar_recuperacao_com_email_valido_gera_token_e_envia_email(self):
         resposta = self.cliente.post(self.url_solicitar, {'email': 'aluno.esquecido@email.com'})
         
         assert resposta.status_code == 200
@@ -33,13 +33,13 @@ class TesteRecuperacaoDeSenha:
         # Garante que o token foi salvo no banco
         assert TokenDeRecuperacao.objects.filter(usuario=self.usuario).exists() is True
 
-    def teste_solicitar_recuperacao_com_email_invalido_nao_envia_email_mas_retorna_200(self):
+    def test_solicitar_recuperacao_com_email_invalido_nao_envia_email_mas_retorna_200(self):
         resposta = self.cliente.post(self.url_solicitar, {'email': 'fantasma@email.com'})
         
         assert resposta.status_code == 200
         assert len(mail.outbox) == 0 # Nenhum e-mail deve ser enviado
 
-    def teste_redefinir_senha_com_token_valido_e_senha_forte(self):
+    def test_redefinir_senha_com_token_valido_e_senha_forte(self):
         token_obj = TokenDeRecuperacao.objects.create(usuario=self.usuario)
         
         dados = {
@@ -58,7 +58,7 @@ class TesteRecuperacaoDeSenha:
         token_obj.refresh_from_db()
         assert token_obj.utilizado is True
 
-    def teste_redefinir_senha_falha_com_senha_fraca(self):
+    def test_redefinir_senha_falha_com_senha_fraca(self):
         token_obj = TokenDeRecuperacao.objects.create(usuario=self.usuario)
         
         dados = {
@@ -73,7 +73,7 @@ class TesteRecuperacaoDeSenha:
         self.usuario.refresh_from_db()
         assert self.usuario.check_password('SenhaAntiga123!') is True
 
-    def teste_redefinir_senha_falha_com_token_expirado(self):
+    def test_redefinir_senha_falha_com_token_expirado(self):
         token_obj = TokenDeRecuperacao.objects.create(usuario=self.usuario)
         
         token_obj.criado_em = timezone.now() - timedelta(minutes=20)

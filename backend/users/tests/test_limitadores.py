@@ -21,7 +21,7 @@ class TesteProtecaoForcaBruta:
         self.url_login = reverse('obter-token-de-login')
         self.url_recuperacao = reverse('solicitar-recuperacao')
 
-    def teste_bloqueio_de_forca_bruta_no_login(self):
+    def test_bloqueio_de_forca_bruta_no_login(self):
         dados_atacante = {
             'email': 'alvo.teste@email.com',
             'password': 'SenhaIncorreta'
@@ -38,7 +38,7 @@ class TesteProtecaoForcaBruta:
         assert resposta_bloqueada.status_code == 429
         assert resposta_bloqueada.data['detail'].code == 'throttled' # Valida o código interno do erro
 
-    def teste_bloqueio_de_forca_bruta_na_recuperacao_de_senha(self):
+    def test_bloqueio_de_forca_bruta_na_recuperacao_de_senha(self):
         dados_atacante = {'email': 'alvo.teste@email.com'}
         
         # As 3 primeiras solicitações de e-mail devem passar
