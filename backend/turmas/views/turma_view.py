@@ -12,14 +12,18 @@ class TurmaView(viewsets.ModelViewSet):
         user = self.request.user
         if user.perfil == 'professor':
             return Turma.objects.filter(professor=user)
-        return Turma.objects.all()
+        return Turma.objects.filter(alunos=user)
 
     def perform_create(self, serializer):
         serializer.save(professor=self.request.user)
 
     @action(detail=True, methods=['post'], url_path='enrollments')
     def matricular_aluno(self, request, pk=None):
-        turma = self.get_object()
+        try:
+            turma = Turma.objects.get(pk=pk)
+        except Turma.DoesNotExist:
+            return Response({"erro": "Turma não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
         codigo_informado = request.data.get('codigo_convite')
 
         if not codigo_informado:
@@ -30,3 +34,18 @@ class TurmaView(viewsets.ModelViewSet):
 
         turma.alunos.add(request.user)
         return Response({"mensagem": "Matrícula realizada com sucesso!"}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], url_path='entrar')
+    def entrar_por_codigo(self, request):
+        codigo_informado = request.data.get('codigo_convite')
+
+        if not codigo_informado:
+            return Response({"erro": "O código da turma é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            turma = Turma.objects.get(codigo_convite=codigo_informado.strip().upper())
+        except Turma.DoesNotExist:
+            return Response({"erro": "Código de turma inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        turma.alunos.add(request.user)
+        return Response(TurmaSerializer(turma, context={'request': request}).data, status=status.HTTP_200_OK)

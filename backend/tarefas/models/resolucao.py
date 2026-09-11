@@ -18,12 +18,18 @@ class ResolucaoTarefa(models.Model):
         verbose_name_plural = 'Resoluções de Tarefas'
 
     def avaliar_acerto(self):
-        gabarito = self.tarefa.coordenadas_gabarito
-        submissao = self.coordenadas_submetidas
-        
-        margem = 20
-        acertou_x = abs(gabarito.get('x_min', 0) - submissao.get('x_min', 0)) <= margem
-        acertou_y = abs(gabarito.get('y_min', 0) - submissao.get('y_min', 0)) <= margem
-        
+        gabarito = self.tarefa.coordenadas_gabarito or {}
+        submissao = self.coordenadas_submetidas or {}
+        margem = 8
+
+        if 'x' in gabarito and 'y' in gabarito:
+            acertou_x = abs(float(gabarito.get('x', 0)) - float(submissao.get('x', 0))) <= margem
+            acertou_y = abs(float(gabarito.get('y', 0)) - float(submissao.get('y', 0))) <= margem
+            self.acertou = acertou_x and acertou_y
+            self.save()
+            return
+
+        acertou_x = abs(gabarito.get('x_min', 0) - submissao.get('x_min', 0)) <= 20
+        acertou_y = abs(gabarito.get('y_min', 0) - submissao.get('y_min', 0)) <= 20
         self.acertou = acertou_x and acertou_y
         self.save()

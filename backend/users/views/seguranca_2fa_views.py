@@ -87,6 +87,7 @@ class ConcluirLogin2FAView(APIView):
                     'nome': usuario.nome,
                     'email': usuario.email,
                     'perfil': usuario.perfil,
+                    'foto_perfil_url': usuario.foto_perfil.url if usuario.foto_perfil else '',
                 },
                 'mensagem': 'Login realizado com sucesso.'
             }, status=status.HTTP_200_OK)

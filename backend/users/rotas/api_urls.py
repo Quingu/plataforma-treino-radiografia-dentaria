@@ -4,6 +4,7 @@ from users.views.registro_views import RegistroDeUsuarioView
 from users.views.recuperacao_views import SolicitarRecuperacaoSenhaView, RedefinirSenhaView
 from users.seguranca.limitadores import BloqueioDeForcaBruta
 from users.views.seguranca_2fa_views import Configurar2FAView, Verificar2FAView, ConcluirLogin2FAView
+from users.views.perfil_views import PerfilUsuarioView
 from users.serializers.login_serializers import SerializadorLoginCom2FA
 
 class VisaoLoginProtegido(TokenObtainPairView):
@@ -22,4 +23,5 @@ urlpatterns = [
     path('login/2fa/', ConcluirLogin2FAView.as_view(), name='concluir-login-2fa'),
     path('recuperar-senha/solicitar/', SolicitarRecuperacaoSenhaView.as_view(), name='solicitar-recuperacao'),
     path('recuperar-senha/redefinir/', RedefinirSenhaView.as_view(), name='redefinir-senha'),
+    path('perfil/', PerfilUsuarioView.as_view(), name='perfil-usuario'),
 ]

@@ -9,13 +9,21 @@ class SerializadorLoginCom2FA(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        
         usuario = self.user
+
+        foto_perfil_url = ''
+        if usuario.foto_perfil:
+            try:
+                foto_perfil_url = usuario.foto_perfil.url
+            except ValueError:
+                foto_perfil_url = ''
+
         dados_usuario = {
             'id': usuario.id,
             'nome': usuario.nome,
             'email': usuario.email,
             'perfil': usuario.perfil,
+            'foto_perfil_url': foto_perfil_url,
         }
         
         if usuario.chave_secreta_2fa:

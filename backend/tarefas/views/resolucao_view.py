@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from tarefas.models.tarefa import Tarefa
-from tarefas.models.resolucao import ResolucaoTarefa
 from tarefas.serializers.resolucao_serializers import ResolucaoSerializer
 
 class ResolverTarefaView(generics.CreateAPIView):
@@ -13,6 +12,13 @@ class ResolverTarefaView(generics.CreateAPIView):
 
     def post(self, request, pk):
         tarefa = get_object_or_404(Tarefa, pk=pk)
+
+        if request.user.perfil != 'aluno' or not tarefa.turma.alunos.filter(id=request.user.id).exists():
+            return Response(
+                {'erro': 'Você não tem acesso a esta tarefa.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = self.get_serializer(data=request.data)
         
         if serializer.is_valid():

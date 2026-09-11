@@ -5,6 +5,14 @@ from tarefas.serializers.tarefa_serializers import TarefaSerializer
 from users.seguranca.permissoes import EhProfessorOuSomenteLeitura
 
 class CriarListaTarefaView(generics.ListCreateAPIView):
-    queryset = Tarefa.objects.all().order_by('-criado_em')
     serializer_class = TarefaSerializer
     permission_classes = [IsAuthenticated, EhProfessorOuSomenteLeitura]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Tarefa.objects.select_related('caso_clinico', 'turma').order_by('-criado_em')
+
+        if user.perfil == 'professor':
+            return queryset.filter(turma__professor=user)
+
+        return queryset.filter(turma__alunos=user)

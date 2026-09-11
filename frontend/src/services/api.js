@@ -98,6 +98,28 @@ async function requisicaoAutenticada(caminho, opcoes = {}) {
   });
 }
 
+export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
+  const formulario = new FormData();
+  if (nome !== undefined) formulario.append('nome', nome);
+  if (novaPassword) formulario.append('nova_password', novaPassword);
+  if (fotoPerfil) formulario.append('foto_perfil', fotoPerfil);
+
+  let resposta;
+
+  try {
+    resposta = await fetch(`${API_URL}/auth/perfil/`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: buscarToken() ? `Bearer ${buscarToken()}` : '',
+      },
+      body: formulario,
+    });
+  } catch {
+    throw new Error('Não foi possível atualizar o perfil. Tente novamente em instantes.');
+  }
+
+  return lerResposta(resposta);
+}
 export async function cadastrarUsuario({ nome, email, password, tipo }) {
   return requisicao('/auth/registro/', {
     method: 'POST',
@@ -171,6 +193,12 @@ export async function criarTurma({ nome }) {
   });
 }
 
+export async function entrarTurmaComCodigo(codigo) {
+  return requisicaoAutenticada('/turmas/entrar/', {
+    method: 'POST',
+    body: JSON.stringify({ codigo_convite: codigo }),
+  });
+}
 export async function editarTurma(id, { nome }) {
   return requisicaoAutenticada(`/turmas/${id}/`, {
     method: 'PATCH',
@@ -201,6 +229,12 @@ export async function criarTarefa({ casoClinico, turma, instrucoes, coordenadasG
   });
 }
 
+export async function resolverTarefa(id, coordenadasSubmetidas) {
+  return requisicaoAutenticada(`/tarefas/tarefas/${id}/resolver/`, {
+    method: 'POST',
+    body: JSON.stringify({ coordenadas_submetidas: coordenadasSubmetidas }),
+  });
+}
 export async function listarCasosClinicos() {
   const dados = await requisicaoAutenticada('/radiografias/casos-clinicos/');
   return Array.isArray(dados) ? dados : dados.results || [];

@@ -47,6 +47,13 @@ class Usuario(AbstractUser):
         verbose_name='Chave Secreta 2FA'
     )
 
+    foto_perfil = models.ImageField(
+        upload_to='usuarios/fotos/',
+        blank=True,
+        null=True,
+        verbose_name='Foto de Perfil'
+    )
+
     objects = UsuarioGerenciador()
 
     USERNAME_FIELD = 'email'
