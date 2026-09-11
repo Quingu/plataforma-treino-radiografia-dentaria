@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import ModalEsqueceuSenha from './ModalEsqueceuSenha';
 import LogoMarca from '../componentes/LogoMarca';
 import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
-import { concluirLogin2FA, loginUsuario } from '../services/api';
+import { concluirLogin2FA, limparTokens, loginUsuario } from '../services/api';
 
 export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   const [etapa, setEtapa] = useState(1);
 
+  const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -17,6 +18,20 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [modalEsqueceuAberto, setModalEsqueceuAberto] = useState(false);
+
+  const perfilSelecionado = tipoUsuario === 'professor' ? 'Professor' : 'Aluno';
+
+  const validarPerfilSelecionado = (dados) => {
+    const perfilBackend = String(dados?.usuario?.perfil || dados?.perfil || '').toLowerCase();
+
+    if (perfilBackend && perfilBackend !== tipoUsuario) {
+      limparTokens();
+      setErro(`Este e-mail está cadastrado como ${perfilBackend}. Selecione o perfil correto para continuar.`);
+      return false;
+    }
+
+    return true;
+  };
 
   const enviarFormulario = async (evento) => {
     evento.preventDefault();
@@ -42,6 +57,8 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
     try {
       const dados = await loginUsuario({ email, password: senha });
 
+      if (!validarPerfilSelecionado(dados)) return;
+
       if (dados.requer_2fa) {
         setTokenTemporario(dados.token_temporario);
         setEtapa(2);
@@ -50,6 +67,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
       aoFazerLogin({
         email,
+        perfil: tipoUsuario,
         requerConfiguracao2FA: true,
         ...dados,
       });
@@ -79,6 +97,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
       aoFazerLogin({
         email,
+        perfil: tipoUsuario,
         ...dados,
       });
     } catch (err) {
@@ -127,11 +146,11 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
           
           <div>
             <h3 className="text-2xl font-bold text-white mb-2">
-              {etapa === 1 ? 'Acesse sua conta' : 'Autenticação 2FA'}
+              {etapa === 1 ? 'Bem-vindo de volta' : 'Autenticação 2FA'}
             </h3>
             <p className="text-slate-400 text-sm">
               {etapa === 1 
-                ? 'Insira seus dados abaixo para entrar no sistema' 
+                ? 'Entre com sua conta para acessar a plataforma'
                 : 'Digite o código de 6 dígitos do seu autenticador'}
             </p>
           </div>
@@ -144,7 +163,25 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
           {etapa === 1 ? (
             <form onSubmit={enviarFormulario} noValidate className="space-y-5">
-              
+              <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => { setTipoUsuario('professor'); setErro(''); }}
+                  disabled={carregando}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 ${tipoUsuario === 'professor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Professor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTipoUsuario('aluno'); setErro(''); }}
+                  disabled={carregando}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 ${tipoUsuario === 'aluno' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Aluno
+                </button>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">E-mail</label>
                 <input
@@ -189,7 +226,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
                 disabled={carregando}
                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors active:scale-[0.99] cursor-pointer disabled:opacity-50"
               >
-                {carregando ? 'Entrando...' : 'Entrar na Plataforma'}
+                {carregando ? 'Entrando...' : `Entrar como ${perfilSelecionado}`}
               </button>
             </form>
           ) : (

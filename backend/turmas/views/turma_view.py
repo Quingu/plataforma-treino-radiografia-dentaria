@@ -10,7 +10,7 @@ class TurmaView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.perfil == 'Professor':
+        if user.perfil == 'professor':
             return Turma.objects.filter(professor=user)
         return Turma.objects.all()
 

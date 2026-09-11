@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
 function salvarTokens(dados) {
   if (dados?.access) localStorage.setItem('radiodent_access', dados.access);
@@ -156,6 +157,59 @@ export async function redefinirSenha({ token, novaPassword }) {
       nova_password: novaPassword,
     }),
   });
+}
+
+export async function listarTurmas() {
+  const dados = await requisicaoAutenticada('/turmas/');
+  return Array.isArray(dados) ? dados : dados.results || [];
+}
+
+export async function criarTurma({ nome }) {
+  return requisicaoAutenticada('/turmas/', {
+    method: 'POST',
+    body: JSON.stringify({ nome }),
+  });
+}
+
+export async function listarTarefas() {
+  const dados = await requisicaoAutenticada('/tarefas/tarefas/');
+  return Array.isArray(dados) ? dados : dados.results || [];
+}
+
+export async function listarCasosClinicos() {
+  const dados = await requisicaoAutenticada('/radiografias/casos-clinicos/');
+  return Array.isArray(dados) ? dados : dados.results || [];
+}
+
+export async function criarCasoClinico({ titulo, descricao, regiaoAnatomica, imagem }) {
+  const formulario = new FormData();
+  formulario.append('titulo', titulo);
+  formulario.append('descricao', descricao);
+  formulario.append('regiao_anatomica', regiaoAnatomica);
+  formulario.append('imagem', imagem);
+
+  let resposta;
+
+  try {
+    resposta = await fetch(`${API_URL}/radiografias/casos-clinicos/`, {
+      method: 'POST',
+      headers: {
+        Authorization: buscarToken() ? `Bearer ${buscarToken()}` : '',
+      },
+      body: formulario,
+    });
+  } catch {
+    throw new Error('Não foi possível enviar o arquivo. Tente novamente em instantes.');
+  }
+
+  return lerResposta(resposta);
+}
+
+export function resolverUrlImagem(caminho) {
+  if (!caminho) return '';
+  if (caminho.startsWith('http')) return caminho;
+  if (caminho.startsWith('/')) return `${BASE_URL}${caminho}`;
+  return `${BASE_URL}/media/${caminho}`;
 }
 
 export {
