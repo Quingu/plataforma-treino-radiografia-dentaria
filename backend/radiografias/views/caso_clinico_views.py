@@ -30,12 +30,6 @@ class DetalheCasoClinicoView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAuthenticated, EhProfessorOuSomenteLeitura]
     lookup_field = 'pk'
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.request.method == 'DELETE':
-            return queryset.filter(professor=self.request.user)
-        return queryset
-
     def destroy(self, request, *args, **kwargs):
         caso = self.get_object()
         if caso.tarefas.exists():

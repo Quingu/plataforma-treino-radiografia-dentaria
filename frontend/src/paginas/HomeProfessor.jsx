@@ -1220,7 +1220,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
               <button
                 type="button"
                 onClick={handleExcluirImagem}
-                className="w-1/2 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                className="w-1/2 py-2.5 bg-[#0d131d] border border-slate-600/80 hover:border-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Excluir
               </button>
@@ -1250,7 +1250,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
               <button
                 type="button"
                 onClick={handleExcluirTurma}
-                className="w-1/2 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+                className="w-1/2 py-2.5 bg-[#0d131d] border border-slate-600/80 hover:border-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Excluir
               </button>
