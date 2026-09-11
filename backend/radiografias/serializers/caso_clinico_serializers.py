@@ -13,6 +13,9 @@ class SerializadorCasoClinico(serializers.ModelSerializer):
         if not obj.imagem:
             return ''
 
+        if obj.imagem.name.startswith('http'):
+            return obj.imagem.name
+
         try:
             url = obj.imagem.url
         except ValueError:
