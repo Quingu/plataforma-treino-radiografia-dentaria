@@ -13,6 +13,7 @@ class PerfilUsuarioView(APIView):
         serializer = PerfilUsuarioSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
+    # Atualiza dados simples do perfil e troca a senha quando ela for enviada.
     def patch(self, request):
         serializer = PerfilUsuarioSerializer(
             request.user,

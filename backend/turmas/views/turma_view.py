@@ -8,6 +8,7 @@ class TurmaView(viewsets.ModelViewSet):
     serializer_class = TurmaSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    # Professor vê as próprias turmas; aluno vê só as turmas em que entrou.
     def get_queryset(self):
         user = self.request.user
         if user.perfil == 'professor':
@@ -36,6 +37,7 @@ class TurmaView(viewsets.ModelViewSet):
         return Response({"mensagem": "Matrícula realizada com sucesso!"}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], url_path='entrar')
+    # Entrada do aluno usando o código que o professor compartilhou.
     def entrar_por_codigo(self, request):
         codigo_informado = request.data.get('codigo_convite')
 

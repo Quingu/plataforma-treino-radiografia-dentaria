@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
+// Guarda a sessão do usuário depois do login.
 function salvarTokens(dados) {
   if (dados?.access) localStorage.setItem('radiodent_access', dados.access);
   if (dados?.refresh) localStorage.setItem('radiodent_refresh', dados.refresh);
@@ -68,6 +69,7 @@ async function lerResposta(resposta) {
   return dados;
 }
 
+// Centraliza as respostas da API para mostrar erros mais claros na tela.
 async function requisicao(caminho, opcoes = {}) {
   let resposta;
 
@@ -86,6 +88,7 @@ async function requisicao(caminho, opcoes = {}) {
   return lerResposta(resposta);
 }
 
+// Usa o token salvo nas rotas que precisam de usuário logado.
 async function requisicaoAutenticada(caminho, opcoes = {}) {
   const token = localStorage.getItem('radiodent_access');
 
@@ -98,6 +101,7 @@ async function requisicaoAutenticada(caminho, opcoes = {}) {
   });
 }
 
+// Atualiza nome, senha ou foto quando o aluno/professor edita o perfil.
 export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
   const formulario = new FormData();
   if (nome !== undefined) formulario.append('nome', nome);
@@ -127,6 +131,7 @@ export async function cadastrarUsuario({ nome, email, password, tipo }) {
   });
 }
 
+// Login normal; se tiver 2FA, o token definitivo só vem depois do código.
 export async function loginUsuario({ email, password }) {
   const dados = await requisicao('/auth/login/', {
     method: 'POST',
@@ -193,6 +198,7 @@ export async function criarTurma({ nome }) {
   });
 }
 
+// O aluno usa o código enviado pelo professor para entrar na turma.
 export async function entrarTurmaComCodigo(codigo) {
   return requisicaoAutenticada('/turmas/entrar/', {
     method: 'POST',
@@ -229,6 +235,7 @@ export async function criarTarefa({ casoClinico, turma, instrucoes, coordenadasG
   });
 }
 
+// Envia a marcação feita pelo aluno para o backend conferir o gabarito.
 export async function resolverTarefa(id, coordenadasSubmetidas) {
   return requisicaoAutenticada(`/tarefas/tarefas/${id}/resolver/`, {
     method: 'POST',
@@ -270,6 +277,7 @@ export async function excluirCasoClinico(id) {
   });
 }
 
+// Ajusta o caminho da imagem para funcionar tanto local quanto no Render/Vercel.
 export function resolverUrlImagem(caminho) {
   if (!caminho) return '';
   if (caminho.startsWith('http')) return caminho;

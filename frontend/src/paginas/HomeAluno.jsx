@@ -18,7 +18,25 @@ export default function HomeAluno({ usuario, aoSair }) {
   const [marcacao, setMarcacao] = useState(null);
   const [desenhoInicio, setDesenhoInicio] = useState(null);
   const [enviandoResposta, setEnviandoResposta] = useState(false);
+  const [confirmarEnviarResposta, setConfirmarEnviarResposta] = useState(false);
+  const [mensagemResposta, setMensagemResposta] = useState({ tipo: '', texto: '' });
+  const [menuPerfilAberto, setMenuPerfilAberto] = useState(false);
+  const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
+  const [modoPerfil, setModoPerfil] = useState('perfil');
+  const [salvandoPerfil, setSalvandoPerfil] = useState(false);
+  const [mensagemPerfil, setMensagemPerfil] = useState({ tipo: '', texto: '' });
+  const [confirmarSalvarPerfil, setConfirmarSalvarPerfil] = useState(false);
+  const [confirmarSair, setConfirmarSair] = useState(false);
+  const [dadosAluno, setDadosAluno] = useState({
+    nome: usuario?.nome || usuario?.nomeCompleto || 'Aluno',
+    email: usuario?.email || '',
+    fotoUrl: usuario?.foto_perfil_url || usuario?.fotoUrl || '',
+    novaSenha: '',
+    confirmarSenha: '',
+    fotoArquivo: null,
+  });
   const imagemRespostaRef = useRef(null);
+  const fotoInputRef = useRef(null);
 
   const nomeAluno = dadosAluno.nome || 'Aluno';
   const primeiroNome = nomeAluno.split(' ')[0] || 'Aluno';
@@ -30,6 +48,7 @@ export default function HomeAluno({ usuario, aoSair }) {
     .join('')
     .toUpperCase();
 
+  // Carrega turmas e tarefas que aparecem no dashboard do aluno.
   const carregarDadosAluno = async () => {
     setCarregandoDados(true);
     setErroDados('');
@@ -122,6 +141,7 @@ export default function HomeAluno({ usuario, aoSair }) {
     setModalEntrarTurma(true);
   };
 
+  // Entrada na turma pelo código recebido do professor.
   const handleEntrarTurma = async (e) => {
     e.preventDefault();
     const codigo = codigoTurma.trim().toUpperCase();
@@ -157,14 +177,18 @@ export default function HomeAluno({ usuario, aoSair }) {
     setTarefaAberta(tarefa);
     setMarcacao(null);
     setDesenhoInicio(null);
+    setMensagemResposta({ tipo: '', texto: '' });
   };
 
   const voltarTarefas = () => {
     setTarefaAberta(null);
     setMarcacao(null);
     setDesenhoInicio(null);
+    setConfirmarEnviarResposta(false);
+    setMensagemResposta({ tipo: '', texto: '' });
   };
 
+  // Converte o clique na radiografia para porcentagem da imagem.
   const pegarPontoDaImagem = (e) => {
     const rect = imagemRespostaRef.current?.getBoundingClientRect();
     if (!rect) return null;
@@ -204,9 +228,17 @@ export default function HomeAluno({ usuario, aoSair }) {
     setDesenhoInicio(null);
   };
 
+  // Antes de enviar, pede confirmação porque a resposta fica registrada.
+  const solicitarEnviarResposta = () => {
+    if (!tarefaAberta || !marcacao?.width || !marcacao?.height || tarefaAberta.resolvida) return;
+    setMensagemResposta({ tipo: '', texto: '' });
+    setConfirmarEnviarResposta(true);
+  };
+
   const handleEnviarResposta = async () => {
     if (!tarefaAberta || !marcacao?.width || !marcacao?.height) return;
 
+    setConfirmarEnviarResposta(false);
     setEnviandoResposta(true);
 
     try {
@@ -217,16 +249,18 @@ export default function HomeAluno({ usuario, aoSair }) {
         height: Number(marcacao.height.toFixed(2)),
       });
 
+      const tarefaAtualizada = { ...tarefaAberta, resolvida: true, acertou: resposta.acertou };
+      setTarefaAberta(tarefaAtualizada);
       setTarefas((prev) => prev.map((tarefa) => (
-        tarefa.id === tarefaAberta.id
-          ? { ...tarefa, resolvida: true, acertou: resposta.acertou }
-          : tarefa
+        tarefa.id === tarefaAberta.id ? tarefaAtualizada : tarefa
       )));
-      alert(resposta.acertou ? 'Resposta enviada. Você acertou a marcação.' : 'Resposta enviada. Revise esse conteúdo depois.');
-      voltarTarefas();
+      setMensagemResposta({
+        tipo: resposta.acertou ? 'sucesso' : 'aviso',
+        texto: resposta.acertou ? 'Resposta enviada. Você acertou a marcação.' : 'Resposta enviada. Revise esse conteúdo depois.',
+      });
       setAbaAtual('dashboard');
     } catch (err) {
-      alert(err.message || 'Não foi possível enviar sua resposta.');
+      setMensagemResposta({ tipo: 'erro', texto: err.message || 'Não foi possível enviar sua resposta.' });
     } finally {
       setEnviandoResposta(false);
     }
@@ -234,6 +268,7 @@ export default function HomeAluno({ usuario, aoSair }) {
 
   const abrirModalPerfil = (modo) => {
     setModoPerfil(modo);
+    setMensagemPerfil({ tipo: '', texto: '' });
     setMenuPerfilAberto(false);
     setModalPerfilAberto(true);
   };
@@ -250,14 +285,21 @@ export default function HomeAluno({ usuario, aoSair }) {
     abrirModalPerfil('perfil');
   };
 
-  const handleSalvarPerfil = async (e) => {
+  const solicitarSalvarPerfil = (e) => {
     e.preventDefault();
 
     if (modoPerfil === 'senha' && dadosAluno.novaSenha !== dadosAluno.confirmarSenha) {
-      alert('As senhas não conferem.');
+      setMensagemPerfil({ tipo: 'erro', texto: 'As senhas não conferem.' });
       return;
     }
 
+    setMensagemPerfil({ tipo: '', texto: '' });
+    setConfirmarSalvarPerfil(true);
+  };
+
+  // Salva alterações do perfil e atualiza o usuário guardado no navegador.
+  const handleSalvarPerfil = async () => {
+    setConfirmarSalvarPerfil(false);
     setSalvandoPerfil(true);
 
     try {
@@ -285,14 +327,14 @@ export default function HomeAluno({ usuario, aoSair }) {
         confirmarSenha: '',
         fotoArquivo: null,
       }));
-      setModalPerfilAberto(false);
-      alert('Perfil atualizado com sucesso.');
+      setMensagemPerfil({ tipo: 'sucesso', texto: 'Perfil atualizado com sucesso.' });
     } catch (err) {
-      alert(err.message || 'Não foi possível atualizar o perfil.');
+      setMensagemPerfil({ tipo: 'erro', texto: err.message || 'Não foi possível atualizar o perfil.' });
     } finally {
       setSalvandoPerfil(false);
     }
   };
+
   const renderTabelaTarefas = (lista) => (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -396,12 +438,30 @@ export default function HomeAluno({ usuario, aoSair }) {
               )}
             </div>
 
+            {mensagemResposta.texto && (
+              <div className={`p-3 rounded-xl border text-sm ${mensagemResposta.tipo === 'erro' ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-blue-500/10 border-blue-500/30 text-blue-200'}`}>
+                {mensagemResposta.texto}
+              </div>
+            )}
+
             <button type="button" onClick={limparMarcacao} className="w-full py-3 bg-[#0d131d] border border-slate-700 hover:border-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer">Limpar marcação</button>
-            <button type="button" onClick={handleEnviarResposta} disabled={enviandoResposta || tarefaAberta.resolvida || !marcacao?.width || !marcacao?.height} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+            <button type="button" onClick={solicitarEnviarResposta} disabled={enviandoResposta || tarefaAberta.resolvida || !marcacao?.width || !marcacao?.height} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
               {enviandoResposta ? 'Enviando resposta...' : 'Enviar resposta'}
             </button>
           </aside>
         </main>
+        {confirmarEnviarResposta && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-[60]">
+            <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+              <h3 className="text-lg font-bold text-white">Enviar resposta</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">Após confirmar, não será possível alterar a resposta desta tarefa.</p>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setConfirmarEnviarResposta(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Não</button>
+                <button type="button" onClick={handleEnviarResposta} className="w-1/2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Sim</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -446,7 +506,7 @@ export default function HomeAluno({ usuario, aoSair }) {
               <button type="button" onClick={() => abrirModalPerfil('perfil')} className="w-full px-4 py-2.5 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer">Editar Perfil</button>
               <button type="button" onClick={() => abrirModalPerfil('senha')} className="w-full px-4 py-2.5 text-left hover:bg-slate-800 text-slate-200 transition-colors cursor-pointer">Trocar Senha</button>
               <div className="border-t border-slate-800 my-1"></div>
-              <button type="button" onClick={aoSair} className="w-full px-4 py-2.5 text-left hover:bg-slate-800 text-slate-400 transition-colors cursor-pointer">Sair</button>
+              <button type="button" onClick={() => { setMenuPerfilAberto(false); setConfirmarSair(true); }} className="w-full px-4 py-2.5 text-left hover:bg-slate-800 text-slate-400 transition-colors cursor-pointer">Sair</button>
             </div>
           )}
           <input type="file" accept="image/*" ref={fotoInputRef} onChange={handleEscolherFoto} className="hidden" />
@@ -632,6 +692,82 @@ export default function HomeAluno({ usuario, aoSair }) {
                 <button type="submit" disabled={entrandoTurma || !codigoTurma.trim()} className="w-1/2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">{entrandoTurma ? 'Entrando...' : 'Entrar'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {modalPerfilAberto && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-white">{modoPerfil === 'senha' ? 'Trocar senha' : 'Editar perfil'}</h3>
+                <p className="text-sm text-slate-400 mt-1">{modoPerfil === 'senha' ? 'Defina uma nova senha de acesso.' : 'Atualize seu nome e sua foto.'}</p>
+              </div>
+              <button type="button" onClick={() => setModalPerfilAberto(false)} className="text-slate-400 hover:text-white text-sm cursor-pointer">x</button>
+            </div>
+
+            {mensagemPerfil.texto && (
+              <div className={`p-3 rounded-xl border text-sm ${mensagemPerfil.tipo === 'erro' ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-blue-500/10 border-blue-500/30 text-blue-200'}`}>
+                {mensagemPerfil.texto}
+              </div>
+            )}
+
+            <form onSubmit={solicitarSalvarPerfil} className="space-y-4">
+              {modoPerfil === 'perfil' ? (
+                <>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 rounded-full bg-blue-500 text-slate-950 flex items-center justify-center overflow-hidden text-xl font-bold">
+                      {dadosAluno.fotoUrl ? <img src={dadosAluno.fotoUrl} alt="Foto do aluno" className="w-full h-full object-cover" /> : (iniciais || 'AL')}
+                    </div>
+                    <button type="button" onClick={() => fotoInputRef.current?.click()} className="px-4 py-2 rounded-lg border border-slate-700 text-xs font-semibold text-slate-200 hover:border-blue-500 cursor-pointer">Alterar foto</button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nome completo</label>
+                    <input type="text" value={dadosAluno.nome} onChange={(e) => setDadosAluno({ ...dadosAluno, nome: e.target.value })} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nova senha</label>
+                    <input type="password" value={dadosAluno.novaSenha} onChange={(e) => setDadosAluno({ ...dadosAluno, novaSenha: e.target.value })} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Confirmar nova senha</label>
+                    <input type="password" value={dadosAluno.confirmarSenha} onChange={(e) => setDadosAluno({ ...dadosAluno, confirmarSenha: e.target.value })} className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all" />
+                  </div>
+                </>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setModalPerfilAberto(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Cancelar</button>
+                <button type="submit" disabled={salvandoPerfil} className="w-1/2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">{salvandoPerfil ? 'Salvando...' : 'Salvar'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {confirmarSalvarPerfil && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-[60]">
+          <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-bold text-white">Salvar alteração</h3>
+            <p className="text-sm text-slate-300">Deseja salvar essa alteração?</p>
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setConfirmarSalvarPerfil(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Não</button>
+              <button type="button" onClick={handleSalvarPerfil} className="w-1/2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Sim</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmarSair && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-[60]">
+          <div className="bg-[#121b2b] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+            <h3 className="text-lg font-bold text-white">Sair da conta</h3>
+            <p className="text-sm text-slate-300">Deseja sair da conta?</p>
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={() => setConfirmarSair(false)} className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition-colors cursor-pointer">Não</button>
+              <button type="button" onClick={aoSair} className="w-1/2 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition-colors cursor-pointer">Sim</button>
+            </div>
           </div>
         </div>
       )}

@@ -12,6 +12,7 @@ export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
   const [verificando, setVerificando] = useState(false);
 
   useEffect(() => {
+    // Busca a chave que vai montar o QR Code do autenticador.
     async function carregarConfiguracao() {
       try {
         const dados = await configurar2FA();
@@ -39,6 +40,7 @@ export default function TelaConfigurar2FA({ usuario, aoConfirmar, aoVoltar }) {
     setTimeout(() => setChaveCopiada(false), 1800);
   };
 
+  // Confirma se o código digitado bate com o aplicativo autenticador.
   const confirmarCodigo = async (evento) => {
     evento.preventDefault();
     setErro('');

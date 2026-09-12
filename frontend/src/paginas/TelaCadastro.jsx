@@ -21,6 +21,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
 
   const [modalAberto, setModalAberto] = useState(false);
 
+  // Valida o cadastro antes de criar a conta e mandar para o 2FA.
   const validarEAvancar2FA = async (evento) => {
     evento.preventDefault();
     setErro('');
@@ -41,7 +42,7 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
       return;
     }
 
-    // Mesma regra usada na recuperação de senha
+    // Mantém a mesma regra de senha usada na recuperação.
     const regexSenhaForte = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
     
     if (!regexSenhaForte.test(senha)) {

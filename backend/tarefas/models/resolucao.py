@@ -17,6 +17,7 @@ class ResolucaoTarefa(models.Model):
         verbose_name = 'Resolução de Tarefa'
         verbose_name_plural = 'Resoluções de Tarefas'
 
+    # Compara a marcação do aluno com o gabarito feito pelo professor.
     def avaliar_acerto(self):
         gabarito = self.tarefa.coordenadas_gabarito or {}
         submissao = self.coordenadas_submetidas or {}

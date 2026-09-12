@@ -21,6 +21,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
 
   const perfilSelecionado = tipoUsuario === 'professor' ? 'Professor' : 'Aluno';
 
+  // Confere se o perfil escolhido bate com o cadastro do e-mail.
   const validarPerfilSelecionado = (dados) => {
     const perfilBackend = String(dados?.usuario?.perfil || dados?.perfil || '').toLowerCase();
 
@@ -33,6 +34,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
     return true;
   };
 
+  // Primeira etapa do login: e-mail, senha e validação do perfil.
   const enviarFormulario = async (evento) => {
     evento.preventDefault();
     setErro(''); 
@@ -78,6 +80,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
     }
   };
 
+  // Segunda etapa quando a conta já tem autenticador configurado.
   const confirmar2FA = async (evento) => {
     evento.preventDefault();
     setErro('');

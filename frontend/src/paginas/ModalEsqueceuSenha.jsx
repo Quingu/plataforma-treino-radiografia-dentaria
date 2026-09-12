@@ -16,6 +16,7 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
 
+  // Primeiro envia o e-mail para gerar o token de recuperação.
   const lidarComEnvioEmail = async (e) => {
     e.preventDefault();
     setErro('');
@@ -37,6 +38,7 @@ export default function ModalEsqueceuSenha({ aoFechar }) {
     }
   };
 
+  // Depois confirma o token e salva a nova senha.
   const lidarComSalvarSenha = async (e) => {
     e.preventDefault();
     setErro('');

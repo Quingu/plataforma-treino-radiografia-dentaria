@@ -58,6 +58,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
     instrucoes: '',
   });
 
+  // Busca os dados que alimentam o dashboard, tarefas e turmas do professor.
   const carregarDadosProfessor = async () => {
     setCarregandoDados(true);
     setErroDados('');
@@ -134,6 +135,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
     return Number(numero?.[1] || numero?.[3] || 0);
   };
 
+  // Separa as imagens da biblioteca pelos botões de fonte.
   const identificarFonte = (caso) => {
     const texto = `${caso.titulo || ''} ${caso.descricao || ''} ${caso.imagem || ''} ${caso.imagem_url || ''}`.toLowerCase();
     if (texto.includes('tufs')) return 'Tufs Database';
@@ -195,6 +197,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
     }
   };
 
+  // Envia uma radiografia própria para ficar disponível na biblioteca.
   const handleUploadRadiografia = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -294,6 +297,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
     setDesenhoInicio(null);
   };
 
+  // Publica a tarefa com a imagem escolhida e o gabarito desenhado.
   const handleSalvarTarefa = async (e) => {
     e.preventDefault();
     if (!casoSelecionado || !dadosTarefa.turmaId || !dadosTarefa.instrucoes.trim() || !gabarito?.width || !gabarito?.height) return;
@@ -366,6 +370,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
     return codigo.split('').join(' ');
   };
 
+  // Cria a turma e usa o código gerado pelo backend para os alunos entrarem.
   const handleCriarTurma = async (e) => {
     e.preventDefault();
     if (!nomeTurma.trim()) return;

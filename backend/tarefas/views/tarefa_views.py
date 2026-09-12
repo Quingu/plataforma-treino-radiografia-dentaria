@@ -8,6 +8,7 @@ class CriarListaTarefaView(generics.ListCreateAPIView):
     serializer_class = TarefaSerializer
     permission_classes = [IsAuthenticated, EhProfessorOuSomenteLeitura]
 
+    # Cada perfil recebe somente as tarefas que fazem sentido para ele.
     def get_queryset(self):
         user = self.request.user
         queryset = Tarefa.objects.select_related('caso_clinico', 'turma').order_by('-criado_em')
