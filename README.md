@@ -35,8 +35,9 @@ plataforma-treino-radiografia-dentaria/
 |   |-- .env.example
 |   |-- setup/
 |   |-- users/
+|   |-- tarefas/
 |   |-- radiografias/
-|   `-- academico/
+|   `-- turmas/
 `-- frontend/
     |-- index.html
     |-- .gitignore
