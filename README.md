@@ -10,7 +10,7 @@
 ![AWS S3](https://img.shields.io/badge/AWS_S3-Storage-569A31?style=flat-square&logo=amazon-s3&logoColor=white)
 ![Brevo](https://img.shields.io/badge/Brevo-0092FF?style=flat-square&logo=brevo&logoColor=white)
 
-Sistema educacional desenvolvido como Projeto Final de Curso (PFC) focado no treinamento e diagnóstico por imagens radiográficas odontológicas. O sistema conta com um backend em Django REST Framework e uma interface interativa em React, focada em marcações de coordenadas clínicas e validações seguras.
+Sistema educacional desenvolvido como o foco no treinamento e diagnóstico por imagens radiográficas odontológicas. O sistema conta com um backend em Django REST Framework e uma interface interativa em React, focada em marcações de coordenadas clínicas e validações seguras.
 
 **Equipe:** Gustavo Quintiliano e Bruno Shiraishi
 
@@ -18,7 +18,7 @@ Sistema educacional desenvolvido como Projeto Final de Curso (PFC) focado no tre
 
 O repositório utiliza a arquitetura de **Monorepo**, estando organizado em duas frentes principais:
 
-- `backend/`: API RESTful construída com Django, responsável pela autenticação via JWT (HttpOnly Cookies), validação de regras de negócio (cálculo de acertos baseados em *Boxes*) e conexão com banco de dados PostgreSQL gerenciado pelo **Supabase** e armazenamento na AWS S3.
+- `backend/`: API RESTful construída com Django, responsável pela autenticação via JWT (HttpOnly Cookies), validação de regras de negócio (cálculo de acertos baseados em *Boxes*) e conexão com banco de dados PostgreSQL gerenciado pelo **Supabase** e armazenamento no Scaleway.
 - `frontend/`: Single Page Application (SPA) em React/Vite com Tailwind CSS, contemplando dashboards segmentados para Professores (gestão de turmas e criação de gabaritos) e Alunos (feed de tarefas e ferramenta interativa de diagnóstico).
 
 ## Estrutura do Repositório
@@ -52,7 +52,7 @@ plataforma-treino-radiografia-dentaria/
 ```
 ## Arquitetura
 
-O sistema opera no modelo Cliente-Servidor com renderização no cliente (SPA). O armazenamento de mídias é delegado à nuvem para garantir escalabilidade.
+O sistema opera no modelo Cliente-Servidor com renderização no cliente (SPA). O armazenamento de mídias é delegado à nuvem.
 
 Fluxo principal da aplicação:
 
@@ -64,7 +64,7 @@ Dashboard React (Professor/Aluno)
 Backend Django REST Framework
        |
        |--> Supabase (PostgreSQL para dados relacionais e coordenadas)
-       |--> AWS S3 (Datasets de radiografias públicas/privadas)
+       |--> Scaleway (Datasets de radiografias e modelos 3D públicas/privadas)
 ```
 ## Backend
 
@@ -75,7 +75,7 @@ Backend Django REST Framework
 | Linguagem | Python 3.12 |
 | Framework | Django 5.0 / DRF |
 | Banco de dados | PostgreSQL (Hospedado no Supabase) |
-| Armazenamento de Mídia | AWS S3 / Boto3 |
+| Armazenamento de Mídia | Scaleway / Boto3 |
 | Autenticação | JWT via Cookies HttpOnly (SimpleJWT) |
 | Gerenciamento de Cors | Django-CORS-Headers |
 | Variáveis de Ambiente | Python-dotenv |
@@ -124,14 +124,14 @@ O backend implementa o paradigma de *Zero Trust*:
 - O token JWT nunca é retornado no *body* da requisição, sendo protegido pelo navegador contra ataques XSS (via `HttpOnly`).
 - O Front-end não possui a lógica matemática de correção; a validação de sobreposição de coordenadas ocorre exclusivamente no Back-end.
 - Proteção nativa do Django contra injeção de SQL e CSRF.
-- *Role-Based Access Control* (RBAC) via permissões customizadas do DRF (ex: `IsProfessor`, `IsStudent`).
+- *Role-Based Access Control* (RBAC) via permissões customizadas do DRF (ex: `EhProfessor`, `EhAluno`).
 
 ### Como rodar o backend localmente
 
 #### Pré-requisitos
 - Python 3.12+
 - Projeto criado no **Supabase** (para obter as credenciais do banco PostgreSQL).
-- Credenciais da AWS (S3).
+- Credenciais do Scaleway.
 
 #### Instalação e Execução
 
@@ -176,7 +176,7 @@ API local: `http://localhost:8000`
 O frontend foi desenvolvido focado na usabilidade clínica (High Contrast Dark Mode) para facilitar a visualização de radiografias.
 
 ### Funcionalidades
-- **Fluxo de Autenticação Segura:** Proteção de rotas baseada na resposta da API.
+- **Gamificação:** Geração de xp ao acertar a resposta nas tarefas e criação de Rankings.
 - **Painel do Professor:** Criação de turmas, geração de convites e o "Estúdio de Anotação" (Lógica de desenhar a área de anomalia com *click & drag*).
 - **Painel do Aluno:** Ingresso em turmas por código, mural de tarefas e interação visual baseada em cliques de precisão sobre as imagens mapeadas percentualmente (0-100%).
 
