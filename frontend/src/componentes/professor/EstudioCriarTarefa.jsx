@@ -8,9 +8,12 @@ export default function EstudioCriarTarefa({
   aoCancelar, 
   aoSalvar, 
   salvando, 
-  mensagem 
+  mensagem,
+  turmas
 }) {
   if (!radiografia) return null;
+
+  const listaTurmas = Array.isArray(turmas) ? turmas : [];
 
   return (
     <section className="flex flex-col min-h-screen bg-[#0d131d] p-6 lg:p-8 animate-fade-in select-none">
@@ -86,6 +89,20 @@ export default function EstudioCriarTarefa({
           <StatusMensagem mensagem={mensagem} />
 
           <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">Turma</label>
+            <select 
+              value={detalhes.turmaId || ''} 
+              onChange={(e) => aoMudarDetalhes({ ...detalhes, turmaId: e.target.value })} 
+              className="w-full px-4 py-3 bg-[#0c1320] border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Selecione uma turma</option>
+              {listaTurmas.map((turma) => (
+                <option key={turma.id} value={turma.id}>{turma.nome}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
               Título da Tarefa
             </label>
@@ -122,7 +139,7 @@ export default function EstudioCriarTarefa({
             <button
               type="button"
               onClick={aoSalvar}
-              disabled={salvando || !desenho.marcacao?.width || !detalhes.titulo}
+              disabled={salvando || !desenho.marcacao?.width || !detalhes.turmaId || !detalhes.titulo?.trim() || !detalhes.instrucoes?.trim()}
               className="w-1/2 py-3 bg-blue-600 text-white font-semibold text-xs rounded-xl cursor-pointer hover:bg-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {salvando ? 'Salvando' : 'Salvar Tarefa'}

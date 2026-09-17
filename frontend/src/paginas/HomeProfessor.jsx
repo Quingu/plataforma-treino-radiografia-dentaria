@@ -29,7 +29,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
   const dados = useDadosProfessor();
   const gestaoTurmas = useGestaoTurmas();
   const biblioteca = useBibliotecaRadiografias();
-  const criacaoTarefa = useCriacaoTarefa();
+  const criacaoTarefa = useCriacaoTarefa(gestaoTurmas.turmas);
 
   const nomeProfessor = perfil.dados.nome || 'Professor';
 
@@ -45,6 +45,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
         aoSalvar={criacaoTarefa.salvarTarefa} 
         salvando={criacaoTarefa.salvando}
         mensagem={criacaoTarefa.mensagem}
+        turmas={criacaoTarefa.turmas}
       />
     );
   }
@@ -121,6 +122,9 @@ export default function HomeProfessor({ usuario, aoSair }) {
         aoFechar={() => gestaoTurmas.setModalCriar(false)} 
         aoSalvar={gestaoTurmas.salvarNovaTurma}
       />
+      {gestaoTurmas.mensagem && !gestaoTurmas.modalCriar && !gestaoTurmas.modalEditar && (
+        <div className="fixed bottom-5 right-5 z-40"><StatusMensagem mensagem={gestaoTurmas.mensagem} /></div>
+      )}
       
       <ModalEditarTurma 
         aberto={gestaoTurmas.modalEditar} 
