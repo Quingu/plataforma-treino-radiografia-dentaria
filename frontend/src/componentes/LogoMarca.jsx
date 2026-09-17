@@ -1,16 +1,16 @@
 import React from 'react';
-import logoRadiodent from '../assets/logo_radiodent.jpeg';
+import logoRadiodent from '../assets/logo_radiodent.png';
 
 export default function LogoMarca({ tamanho = 'md' }) {
-  const medidas = tamanho === 'sm' ? 'w-9 h-9 rounded-xl' : 'w-12 h-12 rounded-2xl';
+  const medidas = tamanho === 'sm' ? 'w-16 h-16' : 'w-32 h-32';
 
   return (
-    <div className={`${medidas} bg-black border border-blue-500/30 flex items-center justify-center overflow-hidden`}>
+    <div className="flex items-center justify-center -mr-13">
       <img
         src={logoRadiodent}
         alt="RadioDent"
         draggable="false"
-        className="w-full h-full object-contain p-1 pointer-events-none"
+        className={`${medidas} object-contain pointer-events-none scale-125 saturate-200`}
       />
     </div>
   );
