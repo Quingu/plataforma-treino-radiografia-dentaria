@@ -7,8 +7,7 @@ from users.models import Usuario
 class TesteDeAutenticacaoJWT:
     def setup_method(self):
         self.cliente = APIClient()
-        
-        # cria um usuario para testarmos a vallidação
+
         self.usuario = Usuario.objects.create_user(
             email='aluno.login@email.com',
             password='SenhaSegura123',
@@ -27,4 +26,6 @@ class TesteDeAutenticacaoJWT:
         assert resposta.status_code == 200
         assert 'access' in resposta.data
         assert 'refresh' in resposta.data
+        assert 'access_token' in resposta.cookies
+        assert 'refresh_token' in resposta.cookies
      

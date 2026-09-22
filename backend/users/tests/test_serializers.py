@@ -9,7 +9,8 @@ class TesteDoSerializadorDeUsuario:
             'email': 'aluno.teste@email.com',
             'nome': 'Aluno Teste',
             'tipo': 'aluno',
-            'password': 'SenhaSegura123'
+            'password': 'SenhaSegura123',
+            'aceitou_termos': True,
         }
         serializador = SerializadorDeUsuario(data=dados)
         
@@ -26,7 +27,8 @@ class TesteDoSerializadorDeUsuario:
             'email': 'aluno2.teste@email.com',
             'nome': 'Aluno Teste Dois',
             'tipo': 'aluno',
-            'password': 'SenhaSegura123'
+            'password': 'SenhaSegura123',
+            'aceitou_termos': True,
         }
         serializador = SerializadorDeUsuario(data=dados)
         

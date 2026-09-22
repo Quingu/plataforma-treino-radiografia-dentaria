@@ -13,7 +13,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   
   const [codigo2FA, setCodigo2FA] = useState('');
-  const [tokenTemporario, setTokenTemporario] = useState('');
 
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -62,7 +61,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
       if (!validarPerfilSelecionado(dados)) return;
 
       if (dados.requer_2fa) {
-        setTokenTemporario(dados.token_temporario);
         setEtapa(2);
         return;
       }
@@ -95,7 +93,6 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
     try {
       const dados = await concluirLogin2FA({
         codigo: codigo2FA,
-        tokenTemporario,
       });
 
       aoFazerLogin({

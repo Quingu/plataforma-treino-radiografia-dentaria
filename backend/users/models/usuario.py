@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import pyotp 
+from users.seguranca.segredos import criptografar_segredo, descriptografar_segredo
 
 class UsuarioGerenciador(BaseUserManager):
     def create_user(self, email, password=None, **campos_extras):
@@ -41,7 +42,7 @@ class Usuario(AbstractUser):
     )
 
     chave_secreta_2fa = models.CharField(
-        max_length=32, 
+        max_length=512,
         blank=True, 
         null=True,
         verbose_name='Chave Secreta 2FA'
@@ -71,8 +72,10 @@ class Usuario(AbstractUser):
         return self.perfil == 'aluno'
 
     def gerar_chave_2fa(self):
-        """Gera uma chave única e salva no banco de dados, caso o usuário ainda não tenha."""
         if not self.chave_secreta_2fa:
-            self.chave_secreta_2fa = pyotp.random_base32()
+            self.chave_secreta_2fa = criptografar_segredo(pyotp.random_base32())
             self.save()
-        return self.chave_secreta_2fa
+        return descriptografar_segredo(self.chave_secreta_2fa)
+
+    def obter_chave_2fa(self):
+        return descriptografar_segredo(self.chave_secreta_2fa)

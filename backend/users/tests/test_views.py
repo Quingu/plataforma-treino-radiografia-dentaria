@@ -15,7 +15,10 @@ class TesteUsuarioAPIView:
             'email': 'novo.usuario@email.com',
             'nome': 'Novo Usuário Teste',
             'tipo': 'aluno',
-            'password': 'SenhaForte123'
+            'password': 'SenhaForte123',
+            'aceitou_termos': True,
+            'versao_termos': '1.0',
+            'versao_privacidade': '1.0',
         }
         resposta = self.cliente.post(self.url_registro, dados, format='json')
         

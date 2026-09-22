@@ -70,3 +70,5 @@ class TesteLoginCom2FA:
         assert resposta_final.status_code == 200
         assert 'access' in resposta_final.data
         assert 'refresh' in resposta_final.data
+        assert 'access_token' in resposta_final.cookies
+        assert 'refresh_token' in resposta_final.cookies

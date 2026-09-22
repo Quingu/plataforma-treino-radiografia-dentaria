@@ -6,7 +6,7 @@ import HomeAluno from './paginas/HomeAluno';
 import HomeProfessor from './paginas/HomeProfessor';
 import {
   buscarUsuarioSalvo,
-  limparTokens,
+  logoutUsuario,
   marcar2FAPendente,
   salvarUsuario,
   tem2FAPendente,
@@ -35,8 +35,8 @@ export default function App() {
     setTelaAtual(dadosLogin.requerConfiguracao2FA ? 'CONFIGURAR_2FA' : 'HOME');
   };
 
-  const handleSair = () => {
-    limparTokens();
+  const handleSair = async () => {
+    await logoutUsuario();
     setUsuario(null);
     setTelaAtual('LOGIN');
   };

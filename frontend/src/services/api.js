@@ -1,15 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
-// Guarda a sessão do usuário depois do login.
-function salvarTokens(dados) {
-  if (dados?.access) localStorage.setItem('radiodent_access', dados.access);
-  if (dados?.refresh) localStorage.setItem('radiodent_refresh', dados.refresh);
-}
+// Tokens ficam exclusivamente em cookies HttpOnly; o JavaScript nunca os le.
+function salvarTokens() {}
 
 function limparTokens() {
-  localStorage.removeItem('radiodent_access');
-  localStorage.removeItem('radiodent_refresh');
   localStorage.removeItem('radiodent_usuario');
   localStorage.removeItem('radiodent_2fa_pendente');
 }
@@ -30,12 +25,8 @@ function buscarUsuarioSalvo() {
   }
 }
 
-function buscarToken() {
-  return localStorage.getItem('radiodent_access');
-}
-
 function temSessaoSalva() {
-  return Boolean(buscarToken() && buscarUsuarioSalvo());
+  return Boolean(buscarUsuarioSalvo());
 }
 
 function marcar2FAPendente(pendente) {
@@ -69,15 +60,32 @@ async function lerResposta(resposta) {
   return dados;
 }
 
+function lerCookie(nome) {
+  return document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${nome}=`))
+    ?.split('=')[1];
+}
+
+async function garantirCsrf() {
+  if (lerCookie('csrftoken')) return;
+  await fetch(`${API_URL}/auth/csrf/`, { credentials: 'include' });
+}
+
 // Centraliza as respostas da API para mostrar erros mais claros na tela.
 async function requisicao(caminho, opcoes = {}) {
   let resposta;
 
   try {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes((opcoes.method || 'GET').toUpperCase())) {
+      await garantirCsrf();
+    }
     resposta = await fetch(`${API_URL}${caminho}`, {
       ...opcoes,
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
         ...opcoes.headers,
       },
     });
@@ -88,17 +96,9 @@ async function requisicao(caminho, opcoes = {}) {
   return lerResposta(resposta);
 }
 
-// Usa o token salvo nas rotas que precisam de usuário logado.
+// A autenticacao e enviada automaticamente pelo cookie HttpOnly.
 async function requisicaoAutenticada(caminho, opcoes = {}) {
-  const token = localStorage.getItem('radiodent_access');
-
-  return requisicao(caminho, {
-    ...opcoes,
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-      ...opcoes.headers,
-    },
-  });
+  return requisicao(caminho, opcoes);
 }
 
 // Atualiza nome, senha ou foto quando o aluno/professor edita o perfil.
@@ -113,8 +113,9 @@ export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
   try {
     resposta = await fetch(`${API_URL}/auth/perfil/`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
-        Authorization: buscarToken() ? `Bearer ${buscarToken()}` : '',
+        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
       },
       body: formulario,
     });
@@ -124,10 +125,18 @@ export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
 
   return lerResposta(resposta);
 }
-export async function cadastrarUsuario({ nome, email, password, tipo }) {
+export async function cadastrarUsuario({ nome, email, password, tipo, aceitouTermos, versaoTermos, versaoPrivacidade }) {
   return requisicao('/auth/registro/', {
     method: 'POST',
-    body: JSON.stringify({ nome, email, password, tipo }),
+    body: JSON.stringify({
+      nome,
+      email,
+      password,
+      tipo,
+      aceitou_termos: aceitouTermos,
+      versao_termos: versaoTermos,
+      versao_privacidade: versaoPrivacidade,
+    }),
   });
 }
 
@@ -138,22 +147,38 @@ export async function loginUsuario({ email, password }) {
     body: JSON.stringify({ email, password }),
   });
 
-  if (!dados.requer_2fa) salvarTokens(dados);
-
   return dados;
 }
 
-export async function concluirLogin2FA({ codigo, tokenTemporario }) {
+export async function concluirLogin2FA({ codigo }) {
   const dados = await requisicao('/auth/login/2fa/', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${tokenTemporario}`,
-    },
     body: JSON.stringify({ codigo }),
   });
-
-  salvarTokens(dados);
   return dados;
+}
+
+export async function obterPerfil() {
+  return requisicaoAutenticada('/auth/perfil/');
+}
+
+export async function logoutUsuario() {
+  try {
+    await requisicao('/auth/logout/', { method: 'POST' });
+  } finally {
+    limparTokens();
+  }
+}
+
+export async function exportarMeusDados() {
+  return requisicaoAutenticada('/auth/dados/exportar/');
+}
+
+export async function solicitarDireitoTitular(tipo, descricao = '') {
+  return requisicaoAutenticada('/auth/dados/solicitacoes/', {
+    method: 'POST',
+    body: JSON.stringify({ tipo, descricao }),
+  });
 }
 
 export async function configurar2FA() {
@@ -257,10 +282,12 @@ export async function criarCasoClinico({ titulo, descricao, regiaoAnatomica, ima
   let resposta;
 
   try {
+    await garantirCsrf();
     resposta = await fetch(`${API_URL}/radiografias/casos-clinicos/`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
-        Authorization: buscarToken() ? `Bearer ${buscarToken()}` : '',
+        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
       },
       body: formulario,
     });
@@ -289,7 +316,9 @@ export {
   API_URL,
   buscarUsuarioSalvo,
   limparTokens,
+  logoutUsuario,
   marcar2FAPendente,
+  obterPerfil,
   requisicaoAutenticada,
   salvarUsuario,
   tem2FAPendente,

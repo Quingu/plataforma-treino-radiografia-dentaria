@@ -73,6 +73,9 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
         email,
         password: senha,
         tipo: tipoUsuario,
+        aceitouTermos,
+        versaoTermos: '1.0',
+        versaoPrivacidade: '1.0',
       });
 
       const dadosLogin = await loginUsuario({ email, password: senha });
