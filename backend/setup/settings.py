@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'https://radiodent.vercel.app',
+    'https://radiodent-pfc.vercel.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
@@ -208,4 +208,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Dados usados nos e-mails enviados pelo sistema
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@radiodent.com")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://radiodent.vercel.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://radiodent-pfc.vercel.app")
