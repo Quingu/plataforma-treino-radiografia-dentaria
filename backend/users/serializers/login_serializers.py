@@ -1,17 +1,19 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+
+from users.seguranca.autenticacao import TokenTemporario2FA
+
 
 class SerializadorLoginCom2FA(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
-        token = super().get_token(user)
-        return token
+        return super().get_token(user)
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        dados = super().validate(attrs)
         usuario = self.user
 
         foto_perfil_url = ''
+
         if usuario.foto_perfil:
             try:
                 foto_perfil_url = usuario.foto_perfil.url
@@ -25,17 +27,20 @@ class SerializadorLoginCom2FA(TokenObtainPairSerializer):
             'perfil': usuario.perfil,
             'foto_perfil_url': foto_perfil_url,
         }
-        
+
         if usuario.chave_secreta_2fa:
-            refresh = RefreshToken.for_user(usuario)
-            
+            token_temporario = TokenTemporario2FA.for_user(usuario)
+
             return {
                 'requer_2fa': True,
-                'token_temporario': str(refresh.access_token),
+                'token_temporario': str(token_temporario),
                 'usuario': dados_usuario,
-                'mensagem': 'Autenticação em duas etapas necessária. Insira o código do seu autenticador.'
+                'mensagem': (
+                    'Autenticação em duas etapas necessária. '
+                    'Insira o código do seu autenticador.'
+                ),
             }
-            
-        data['requer_2fa'] = False
-        data['usuario'] = dados_usuario
-        return data
+
+        dados['requer_2fa'] = False
+        dados['usuario'] = dados_usuario
+        return dados
