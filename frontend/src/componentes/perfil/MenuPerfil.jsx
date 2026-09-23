@@ -1,4 +1,12 @@
-export default function MenuPerfil({ aberto, nome, email, aoEditar, aoTrocarSenha, aoSair }) {
+export default function MenuPerfil({
+  aberto,
+  nome,
+  email,
+  aoEditar,
+  aoTrocarSenha,
+  aoAbrirPrivacidade,
+  aoSair,
+}) {
   if (!aberto) return null;
 
   return (
@@ -20,6 +28,14 @@ export default function MenuPerfil({ aberto, nome, email, aoEditar, aoTrocarSenh
         className="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 cursor-pointer"
       >
         Trocar senha
+      </button>
+
+      <button
+        type="button"
+        onClick={aoAbrirPrivacidade}
+        className="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 cursor-pointer"
+      >
+        Privacidade e meus dados
       </button>
       
       <button 
