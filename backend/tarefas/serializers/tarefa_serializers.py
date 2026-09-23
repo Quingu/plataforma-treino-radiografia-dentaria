@@ -60,8 +60,17 @@ class TarefaSerializer(serializers.ModelSerializer):
         caso = attrs.get('caso_clinico')
         if turma and turma.professor_id != request.user.id:
             raise serializers.ValidationError({'turma': 'Voce nao pode criar tarefas em turma de outro professor.'})
-        if caso and caso.professor_id != request.user.id:
-            raise serializers.ValidationError({'caso_clinico': 'Voce nao pode usar radiografia de outro professor.'})
+        if caso and (
+            caso.professor_id != request.user.id
+            and caso.visibilidade != 'compartilhada'
+        ):
+            raise serializers.ValidationError(
+        {
+            'caso_clinico': (
+                'Você não pode usar radiografia privada de outro professor.'
+            )
+        }
+    )
         return attrs
 
     def get_resolvida(self, obj):
