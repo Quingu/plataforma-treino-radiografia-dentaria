@@ -10,40 +10,47 @@ export default function MenuPerfil({
   if (!aberto) return null;
 
   return (
-    <div className="absolute right-0 mt-2 w-52 bg-[#121b2b] border border-slate-700/80 rounded-xl shadow-2xl z-40 py-2 text-xs">
-      <div className="px-4 py-2 border-b border-slate-800">
-        <p className="font-semibold text-white truncate">{nome}</p>
-        <p className="text-[10px] text-slate-400 truncate">{email}</p>
+    <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-700/80 bg-[#111c2c] py-2 text-slate-200 shadow-2xl z-50">
+      <div className="border-b border-slate-800 px-4 py-3">
+        <p className="truncate text-sm font-bold text-white">{nome}</p>
+        <p className="truncate text-xs text-slate-400">{email}</p>
       </div>
-      
-      <button 
-        onClick={aoEditar} 
-        className="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 cursor-pointer"
-      >
-        Editar perfil
-      </button>
-      
-      <button 
-        onClick={aoTrocarSenha} 
-        className="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 cursor-pointer"
-      >
-        Trocar senha
-      </button>
 
-      <button
-        type="button"
-        onClick={aoAbrirPrivacidade}
-        className="w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-800 cursor-pointer"
-      >
-        Privacidade e meus dados
-      </button>
-      
-      <button 
-        onClick={aoSair} 
-        className="w-full px-4 py-2 text-left text-red-300 hover:bg-slate-800 cursor-pointer"
-      >
-        Sair
-      </button>
+      <div className="py-1">
+        <button
+          type="button"
+          onClick={aoEditar}
+          className="w-full cursor-pointer px-4 py-2 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800/60"
+        >
+          Editar Perfil
+        </button>
+
+        <button
+          type="button"
+          onClick={aoTrocarSenha}
+          className="w-full cursor-pointer px-4 py-2 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800/60"
+        >
+          Alterar Senha
+        </button>
+
+        <button
+          type="button"
+          onClick={aoAbrirPrivacidade}
+          className="w-full cursor-pointer px-4 py-2 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800/60"
+        >
+          Privacidade e meus dados
+        </button>
+      </div>
+
+      <div className="border-t border-slate-800 pt-1">
+        <button
+          type="button"
+          onClick={aoSair}
+          className="w-full cursor-pointer px-4 py-2 text-left text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10"
+        >
+          Sair da Conta
+        </button>
+      </div>
     </div>
   );
 }
