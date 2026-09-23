@@ -72,10 +72,10 @@ async function lerResposta(resposta) {
 
 /*
  * O cookie csrftoken pertence ao domínio da API no Render.
- * Portanto, document.cookie do frontend Vercel não pode lê-lo.
+ * Por isso, document.cookie do frontend no Vercel não consegue lê-lo.
  *
- * O backend retorna csrfToken em /auth/csrf/. Este valor é mantido
- * apenas em memória e enviado no cabeçalho X-CSRFToken.
+ * O endpoint /auth/csrf/ retorna o token no JSON. O valor fica
+ * somente em memória e é enviado como X-CSRFToken nas ações mutáveis.
  */
 let csrfToken = null;
 
@@ -90,6 +90,9 @@ async function garantirCsrf() {
     resposta = await fetch(`${API_URL}/auth/csrf/`, {
       method: 'GET',
       credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+      },
     });
   } catch {
     throw new Error('Não foi possível iniciar a proteção CSRF.');
@@ -109,11 +112,12 @@ function metodoExigeCsrf(metodo = 'GET') {
   return !['GET', 'HEAD', 'OPTIONS'].includes(metodo.toUpperCase());
 }
 
-// Centraliza requisições JSON e envia o token CSRF quando necessário.
+// Centraliza todas as requisições JSON.
 async function requisicao(caminho, opcoes = {}) {
   const metodo = (opcoes.method || 'GET').toUpperCase();
 
   const headers = {
+    Accept: 'application/json',
     'Content-Type': 'application/json',
     ...opcoes.headers,
   };
@@ -132,7 +136,9 @@ async function requisicao(caminho, opcoes = {}) {
       headers,
     });
   } catch {
-    throw new Error('Não foi possível conectar ao servidor. Tente novamente em instantes.');
+    throw new Error(
+      'Não foi possível conectar ao servidor. Tente novamente em instantes.',
+    );
   }
 
   return lerResposta(resposta);
@@ -143,7 +149,6 @@ async function requisicaoAutenticada(caminho, opcoes = {}) {
   return requisicao(caminho, opcoes);
 }
 
-// Atualiza nome, senha ou foto do perfil.
 export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
   const formulario = new FormData();
 
@@ -168,12 +173,15 @@ export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
       method: 'PATCH',
       credentials: 'include',
       headers: {
+        Accept: 'application/json',
         'X-CSRFToken': tokenCsrf,
       },
       body: formulario,
     });
   } catch {
-    throw new Error('Não foi possível atualizar o perfil. Tente novamente em instantes.');
+    throw new Error(
+      'Não foi possível atualizar o perfil. Tente novamente em instantes.',
+    );
   }
 
   return lerResposta(resposta);
@@ -202,7 +210,7 @@ export async function cadastrarUsuario({
   });
 }
 
-// Login normal. Se houver 2FA, o token definitivo só é gerado após o código.
+// Não usar fetch diretamente no componente de login.
 export async function loginUsuario({ email, password }) {
   return requisicao('/auth/login/', {
     method: 'POST',
@@ -365,12 +373,15 @@ export async function criarCasoClinico({
       method: 'POST',
       credentials: 'include',
       headers: {
+        Accept: 'application/json',
         'X-CSRFToken': tokenCsrf,
       },
       body: formulario,
     });
   } catch {
-    throw new Error('Não foi possível enviar o arquivo. Tente novamente em instantes.');
+    throw new Error(
+      'Não foi possível enviar o arquivo. Tente novamente em instantes.',
+    );
   }
 
   return lerResposta(resposta);
@@ -382,7 +393,6 @@ export async function excluirCasoClinico(id) {
   });
 }
 
-// Ajusta a URL da imagem para ambiente local ou produção.
 export function resolverUrlImagem(caminho) {
   if (!caminho) {
     return '';
@@ -403,7 +413,6 @@ export {
   API_URL,
   buscarUsuarioSalvo,
   limparTokens,
-
   marcar2FAPendente,
   requisicaoAutenticada,
   salvarUsuario,
