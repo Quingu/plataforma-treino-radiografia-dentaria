@@ -8,6 +8,7 @@ import ModalCriarTurma from '../componentes/professor/ModalCriarTurma';
 import ModalEditarTurma from '../componentes/professor/ModalEditarTurma';
 import ModalUploadRadiografia from '../componentes/professor/ModalUploadRadiografia';
 import ModalPerfil from '../componentes/perfil/ModalPerfil';
+import ModalPrivacidade from '../componentes/perfil/ModalPrivacidade';
 import ModalConfirmacao from '../componentes/comum/ModalConfirmacao';
 import StatusMensagem from '../componentes/comum/StatusMensagem';
 
@@ -23,6 +24,7 @@ export default function HomeProfessor({ usuario, aoSair }) {
   const [abaAtual, setAbaAtual] = useState('dashboard');
   const [menuPerfil, setMenuPerfil] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
+  const [privacidadeAberta, setPrivacidadeAberta] = useState(false);
 
   // instancia dos hooks que isolam as regras de negócio e chamadas à API
   const perfil = usePerfilUsuario(usuario);
@@ -68,6 +70,10 @@ export default function HomeProfessor({ usuario, aoSair }) {
         aoTrocarSenha={() => {
           setMenuPerfil(false);
           perfil.abrir('senha');
+        }}
+        aoAbrirPrivacidade={() => {
+          setMenuPerfil(false);
+          setPrivacidadeAberta(true);
         }}
         aoSolicitarSair={() => {
           setMenuPerfil(false);
@@ -157,6 +163,11 @@ export default function HomeProfessor({ usuario, aoSair }) {
         aoEnviar={perfil.solicitar}
         aoAlterarDados={perfil.alterar}
         aoEscolherFoto={perfil.escolherFoto}
+      />
+
+      <ModalPrivacidade
+        aberto={privacidadeAberta}
+        aoFechar={() => setPrivacidadeAberta(false)}
       />
 
       <ModalConfirmacao

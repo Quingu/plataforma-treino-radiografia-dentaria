@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -15,7 +16,11 @@ class ListarCriarCasoClinicoView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(professor=self.request.user)
+        # as imagens institucionais podem ser vistos por qualquer professor, mas uploads particulares permanecem disponíveis somente para o autor.
+        queryset = super().get_queryset().filter(
+            Q(visibilidade=CasoClinico.Visibilidade.COMPARTILHADA)
+            | Q(professor=self.request.user)
+        )
         regiao = self.request.query_params.get('regiao_anatomica')
         if regiao:
             queryset = queryset.filter(regiao_anatomica=regiao)

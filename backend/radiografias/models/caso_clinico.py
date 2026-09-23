@@ -11,6 +11,10 @@ class RegiaoAnatomica(models.TextChoices):
     GERAL = 'geral', 'Panorâmica Geral'
 
 class CasoClinico(models.Model):
+    class Visibilidade(models.TextChoices):
+        PRIVADA = 'privada', 'Privada do professor'
+        COMPARTILHADA = 'compartilhada', 'Biblioteca compartilhada'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
     titulo = models.CharField(max_length=255, verbose_name='Título do Caso Clínico')
@@ -30,15 +34,25 @@ class CasoClinico(models.Model):
             null=True,
             blank=True
         )
-    # Separa os uploads por ano e mês
-    imagem = models.ImageField(upload_to='radiografias/%Y/%m/', verbose_name='Arquivo de Imagem')
+    
+    # Uploads de professores são separados dos itens institucionais compartilhados.
+    imagem = models.ImageField(upload_to='uploads-professores/%Y/%m/', verbose_name='Arquivo de Imagem')
+
+    visibilidade = models.CharField(
+        max_length=16,
+        choices=Visibilidade.choices,
+        default=Visibilidade.PRIVADA,
+        db_index=True,
+    )
     
     professor = models.ForeignKey(
         Usuario, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
         limit_choices_to={'perfil': 'Professor'},
         related_name='casos_enviados',
-        verbose_name='Professor Responsável'
+        verbose_name='Professor Responsável',
+        null=True,
+        blank=True,
     )
     
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name='Data de Criação')

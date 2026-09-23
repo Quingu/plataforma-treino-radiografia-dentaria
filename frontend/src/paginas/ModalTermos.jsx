@@ -1,4 +1,5 @@
 import React from 'react';
+
 export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false }) {
 
   const lidarComAceite = () => {
@@ -35,47 +36,49 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
         <div className="p-6 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed custom-scrollbar">
           
           <p className="text-slate-400 italic text-xs border-l-2 border-blue-500 pl-3 py-1">
-            Última atualização: Agosto de 2026<br/>
-            O <strong>RadioDent</strong> é uma plataforma acadêmica voltada ao treino e diagnóstico radiográfico odontológico. A navegação no sistema requer o consentimento explícito dos termos abaixo (RN-02).
+            Versão: 1.0 - 22/09/2026<br/>
+            O <strong>RadioDent</strong> é uma plataforma acadêmica de treino radiográfico. O seu uso requer o consentimento explícito das condições e políticas descritas abaixo.
           </p>
 
           <section>
-            <h3 className="text-blue-400 font-semibold mb-2 text-base">1. Coleta e Tratamento de Dados Pessoais</h3>
-            <p className="mb-2">Coletamos apenas as informações estritamente necessárias para a prestação dos serviços e gestão da plataforma acadêmica (Minimização de Dados - RN-04):</p>
+            <h3 className="text-blue-400 font-semibold mb-2 text-base">1. Natureza do Serviço e Regras de Uso</h3>
+            <p className="mb-2">A utilização da plataforma está sujeita às seguintes regras fundamentais:</p>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li><strong>Dados de Cadastro:</strong> Nome completo, endereço de e-mail e senha armazenada de forma criptografada.</li>
-              <li><strong>Perfil de Acesso (RBAC):</strong> Classificação entre <em>Professor</em> e <em>Aluno</em> para controle rigoroso de permissões.</li>
-              <li><strong>Dados de Desempenho Acadêmico:</strong> Histórico de exercícios, laudos submetidos, pontuações e interações nas simulações.</li>
+              <li>A plataforma não substitui avaliação clínica, diagnóstico, laudo profissional ou atendimento odontológico.</li>
+              <li>O usuário deve proteger sua conta, utilizar dados corretos e não compartilhar suas credenciais de acesso.</li>
+              <li>É expressamente proibida a inserção de dados identificáveis de pacientes nas imagens e radiografias submetidas.</li>
+              <li>O uso indevido, tentativa de elevação de privilégios ou acesso a dados de terceiros pode resultar no bloqueio imediato da conta.</li>
             </ul>
           </section>
 
           <section>
-            <h3 className="text-blue-400 font-semibold mb-2 text-base">2. Finalidade e Proteção de Dados de Saúde</h3>
-            <p className="mb-2">Os dados coletados são utilizados exclusivamente para as seguintes finalidades:</p>
+            <h3 className="text-blue-400 font-semibold mb-2 text-base">2. Tratamento de Dados Pessoais</h3>
+            <p className="mb-2">Coletamos apenas os dados necessários para o funcionamento acadêmico (Base legal: Execução de Contrato e Legítimo Interesse):</p>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li>Autenticação segura e prevenção contra acessos não autorizados.</li>
-              <li>Acompanhamento pedagógico e geração de relatórios de desempenho.</li>
-              <li><strong>Anonimização Radiográfica:</strong> Todas as imagens clínicas disponibilizadas para treino passam por um processo rigoroso de desidentificação de dados de pacientes.</li>
-            </ul>
-            <p className="mt-2 text-xs text-slate-500">*O RadioDent não comercializa e não compartilha dados com terceiros sob nenhuma hipótese.</p>
-          </section>
-
-          <section>
-            <h3 className="text-blue-400 font-semibold mb-2 text-base">3. Cookies e Armazenamento Local</h3>
-            <p className="mb-2">Utilizamos Armazenamento Local (localStorage) e Cookies funcionais para:</p>
-            <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li><strong>Autenticação Contínua:</strong> Manter tokens de sessão ativos com segurança.</li>
-              <li><strong>Preferências de Interface:</strong> Preservar configurações de navegação e atalhos do simulador.</li>
+              <li><strong>Dados de Cadastro:</strong> Nome, e-mail, senha criptografada e definição do perfil (Professor ou Aluno).</li>
+              <li><strong>Dados Opcionais:</strong> Foto de perfil para identificação visual, fornecida mediante consentimento.</li>
+              <li><strong>Auditoria e Segurança:</strong> Registramos o endereço IP e ações críticas no sistema. Estes logs são retidos por um período máximo de 180 dias.</li>
+              <li><strong>Conteúdo Clínico:</strong> Resoluções e coordenadas enviadas nas atividades. Nenhuma radiografia ou dado clínico é utilizado para treinar modelos de Inteligência Artificial.</li>
             </ul>
           </section>
 
           <section>
-            <h3 className="text-blue-400 font-semibold mb-2 text-base">4. Direitos do Titular dos Dados (LGPD)</h3>
-            <p className="mb-2">Conforme a Lei nº 13.709/2018, você possui os seguintes direitos garantidos:</p>
+            <h3 className="text-blue-400 font-semibold mb-2 text-base">3. Cookies e Compartilhamento</h3>
+            <p className="mb-2">O RadioDent preza pela minimização de exposição dos seus dados:</p>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
-              <li><strong>Acesso e Retificação:</strong> Visualizar e atualizar suas informações de perfil a qualquer momento.</li>
-              <li><strong>Revogação e Exclusão:</strong> Solicitar o encerramento da conta e a eliminação completa de seus dados pessoais da base de dados.</li>
-              <li><strong>Transparência:</strong> Informação clara sobre o tratamento de seus dados.</li>
+              <li>Utilizamos <strong>exclusivamente cookies estritamente necessários</strong> de sessão e segurança (proteção CSRF).</li>
+              <li>Não utilizamos cookies de publicidade, nem realizamos rastreamento opcional ou venda de dados para terceiros.</li>
+              <li>Compartilhamos dados de forma segura apenas com a infraestrutura essencial do projeto (Supabase para banco de dados, Scaleway para armazenamento e Brevo para e-mails transacionais).</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-blue-400 font-semibold mb-2 text-base">4. Seus Direitos (LGPD)</h3>
+            <p className="mb-2">Você possui o controle sobre as suas informações. A qualquer momento é possível:</p>
+            <ul className="list-disc pl-5 space-y-1 text-slate-400">
+              <li>Confirmar a existência do tratamento, acessar e corrigir dados incompletos diretamente no perfil.</li>
+              <li>Exportar os seus dados em formato estruturado (portabilidade).</li>
+              <li>Solicitar a exclusão da sua conta, foto de perfil ou revogar consentimentos previamente concedidos.</li>
             </ul>
           </section>
 
