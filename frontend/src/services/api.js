@@ -403,7 +403,7 @@ export {
   API_URL,
   buscarUsuarioSalvo,
   limparTokens,
-  logoutUsuario,
+
   marcar2FAPendente,
   requisicaoAutenticada,
   salvarUsuario,
