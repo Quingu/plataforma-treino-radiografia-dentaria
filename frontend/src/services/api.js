@@ -1,9 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 const BASE_URL = API_URL.replace(/\/api\/?$/, '');
 
-// Tokens ficam exclusivamente em cookies HttpOnly; o JavaScript nunca os le.
-function salvarTokens() {}
-
+// O JavaScript nunca lê tokens JWT.
+// A sessão é enviada automaticamente pelos cookies HttpOnly.
 function limparTokens() {
   localStorage.removeItem('radiodent_usuario');
   localStorage.removeItem('radiodent_2fa_pendente');
@@ -15,7 +14,10 @@ function salvarUsuario(usuario) {
 
 function buscarUsuarioSalvo() {
   const usuario = localStorage.getItem('radiodent_usuario');
-  if (!usuario) return null;
+
+  if (!usuario) {
+    return null;
+  }
 
   try {
     return JSON.parse(usuario);
@@ -44,7 +46,15 @@ function tem2FAPendente() {
 
 async function lerResposta(resposta) {
   const texto = await resposta.text();
-  const dados = texto ? JSON.parse(texto) : {};
+  let dados = {};
+
+  try {
+    dados = texto ? JSON.parse(texto) : {};
+  } catch {
+    if (!resposta.ok) {
+      throw new Error('O servidor retornou uma resposta inválida.');
+    }
+  }
 
   if (!resposta.ok) {
     const mensagem =
@@ -60,34 +70,66 @@ async function lerResposta(resposta) {
   return dados;
 }
 
-function lerCookie(nome) {
-  return document.cookie
-    .split('; ')
-    .find((cookie) => cookie.startsWith(`${nome}=`))
-    ?.split('=')[1];
-}
+/*
+ * O cookie csrftoken pertence ao domínio da API no Render.
+ * Portanto, document.cookie do frontend Vercel não pode lê-lo.
+ *
+ * O backend retorna csrfToken em /auth/csrf/. Este valor é mantido
+ * apenas em memória e enviado no cabeçalho X-CSRFToken.
+ */
+let csrfToken = null;
 
 async function garantirCsrf() {
-  if (lerCookie('csrftoken')) return;
-  await fetch(`${API_URL}/auth/csrf/`, { credentials: 'include' });
-}
+  if (csrfToken) {
+    return csrfToken;
+  }
 
-// Centraliza as respostas da API para mostrar erros mais claros na tela.
-async function requisicao(caminho, opcoes = {}) {
   let resposta;
 
   try {
-    if (!['GET', 'HEAD', 'OPTIONS'].includes((opcoes.method || 'GET').toUpperCase())) {
-      await garantirCsrf();
-    }
+    resposta = await fetch(`${API_URL}/auth/csrf/`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+  } catch {
+    throw new Error('Não foi possível iniciar a proteção CSRF.');
+  }
+
+  const dados = await lerResposta(resposta);
+
+  if (!dados.csrfToken) {
+    throw new Error('O servidor não forneceu o token CSRF.');
+  }
+
+  csrfToken = dados.csrfToken;
+  return csrfToken;
+}
+
+function metodoExigeCsrf(metodo = 'GET') {
+  return !['GET', 'HEAD', 'OPTIONS'].includes(metodo.toUpperCase());
+}
+
+// Centraliza requisições JSON e envia o token CSRF quando necessário.
+async function requisicao(caminho, opcoes = {}) {
+  const metodo = (opcoes.method || 'GET').toUpperCase();
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...opcoes.headers,
+  };
+
+  if (metodoExigeCsrf(metodo)) {
+    headers['X-CSRFToken'] = await garantirCsrf();
+  }
+
+  let resposta;
+
+  try {
     resposta = await fetch(`${API_URL}${caminho}`, {
       ...opcoes,
+      method: metodo,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
-        ...opcoes.headers,
-      },
+      headers,
     });
   } catch {
     throw new Error('Não foi possível conectar ao servidor. Tente novamente em instantes.');
@@ -96,17 +138,28 @@ async function requisicao(caminho, opcoes = {}) {
   return lerResposta(resposta);
 }
 
-// A autenticacao e enviada automaticamente pelo cookie HttpOnly.
+// A autenticação é enviada automaticamente pelos cookies HttpOnly.
 async function requisicaoAutenticada(caminho, opcoes = {}) {
   return requisicao(caminho, opcoes);
 }
 
-// Atualiza nome, senha ou foto quando o aluno/professor edita o perfil.
+// Atualiza nome, senha ou foto do perfil.
 export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
   const formulario = new FormData();
-  if (nome !== undefined) formulario.append('nome', nome);
-  if (novaPassword) formulario.append('nova_password', novaPassword);
-  if (fotoPerfil) formulario.append('foto_perfil', fotoPerfil);
+
+  if (nome !== undefined) {
+    formulario.append('nome', nome);
+  }
+
+  if (novaPassword) {
+    formulario.append('nova_password', novaPassword);
+  }
+
+  if (fotoPerfil) {
+    formulario.append('foto_perfil', fotoPerfil);
+  }
+
+  const tokenCsrf = await garantirCsrf();
 
   let resposta;
 
@@ -115,7 +168,7 @@ export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
       method: 'PATCH',
       credentials: 'include',
       headers: {
-        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
+        'X-CSRFToken': tokenCsrf,
       },
       body: formulario,
     });
@@ -125,7 +178,16 @@ export async function atualizarPerfil({ nome, novaPassword, fotoPerfil }) {
 
   return lerResposta(resposta);
 }
-export async function cadastrarUsuario({ nome, email, password, tipo, aceitouTermos, versaoTermos, versaoPrivacidade }) {
+
+export async function cadastrarUsuario({
+  nome,
+  email,
+  password,
+  tipo,
+  aceitouTermos,
+  versaoTermos,
+  versaoPrivacidade,
+}) {
   return requisicao('/auth/registro/', {
     method: 'POST',
     body: JSON.stringify({
@@ -140,22 +202,19 @@ export async function cadastrarUsuario({ nome, email, password, tipo, aceitouTer
   });
 }
 
-// Login normal; se tiver 2FA, o token definitivo só vem depois do código.
+// Login normal. Se houver 2FA, o token definitivo só é gerado após o código.
 export async function loginUsuario({ email, password }) {
-  const dados = await requisicao('/auth/login/', {
+  return requisicao('/auth/login/', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-
-  return dados;
 }
 
 export async function concluirLogin2FA({ codigo }) {
-  const dados = await requisicao('/auth/login/2fa/', {
+  return requisicao('/auth/login/2fa/', {
     method: 'POST',
     body: JSON.stringify({ codigo }),
   });
-  return dados;
 }
 
 export async function obterPerfil() {
@@ -164,8 +223,11 @@ export async function obterPerfil() {
 
 export async function logoutUsuario() {
   try {
-    await requisicao('/auth/logout/', { method: 'POST' });
+    await requisicao('/auth/logout/', {
+      method: 'POST',
+    });
   } finally {
+    csrfToken = null;
     limparTokens();
   }
 }
@@ -223,13 +285,15 @@ export async function criarTurma({ nome }) {
   });
 }
 
-// O aluno usa o código enviado pelo professor para entrar na turma.
 export async function entrarTurmaComCodigo(codigo) {
   return requisicaoAutenticada('/turmas/entrar/', {
     method: 'POST',
-    body: JSON.stringify({ codigo_convite: codigo }),
+    body: JSON.stringify({
+      codigo_convite: codigo,
+    }),
   });
 }
+
 export async function editarTurma(id, { nome }) {
   return requisicaoAutenticada(`/turmas/${id}/`, {
     method: 'PATCH',
@@ -248,7 +312,12 @@ export async function listarTarefas() {
   return Array.isArray(dados) ? dados : dados.results || [];
 }
 
-export async function criarTarefa({ casoClinico, turma, instrucoes, coordenadasGabarito }) {
+export async function criarTarefa({
+  casoClinico,
+  turma,
+  instrucoes,
+  coordenadasGabarito,
+}) {
   return requisicaoAutenticada('/tarefas/tarefas/', {
     method: 'POST',
     body: JSON.stringify({
@@ -260,34 +329,43 @@ export async function criarTarefa({ casoClinico, turma, instrucoes, coordenadasG
   });
 }
 
-// Envia a marcação feita pelo aluno para o backend conferir o gabarito.
 export async function resolverTarefa(id, coordenadasSubmetidas) {
   return requisicaoAutenticada(`/tarefas/tarefas/${id}/resolver/`, {
     method: 'POST',
-    body: JSON.stringify({ coordenadas_submetidas: coordenadasSubmetidas }),
+    body: JSON.stringify({
+      coordenadas_submetidas: coordenadasSubmetidas,
+    }),
   });
 }
+
 export async function listarCasosClinicos() {
   const dados = await requisicaoAutenticada('/radiografias/casos-clinicos/');
   return Array.isArray(dados) ? dados : dados.results || [];
 }
 
-export async function criarCasoClinico({ titulo, descricao, regiaoAnatomica, imagem }) {
+export async function criarCasoClinico({
+  titulo,
+  descricao,
+  regiaoAnatomica,
+  imagem,
+}) {
   const formulario = new FormData();
+
   formulario.append('titulo', titulo);
   formulario.append('descricao', descricao);
   formulario.append('regiao_anatomica', regiaoAnatomica);
   formulario.append('imagem', imagem);
 
+  const tokenCsrf = await garantirCsrf();
+
   let resposta;
 
   try {
-    await garantirCsrf();
     resposta = await fetch(`${API_URL}/radiografias/casos-clinicos/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
-        ...(lerCookie('csrftoken') ? { 'X-CSRFToken': lerCookie('csrftoken') } : {}),
+        'X-CSRFToken': tokenCsrf,
       },
       body: formulario,
     });
@@ -304,11 +382,20 @@ export async function excluirCasoClinico(id) {
   });
 }
 
-// Ajusta o caminho da imagem para funcionar tanto local quanto no Render/Vercel.
+// Ajusta a URL da imagem para ambiente local ou produção.
 export function resolverUrlImagem(caminho) {
-  if (!caminho) return '';
-  if (caminho.startsWith('http')) return caminho;
-  if (caminho.startsWith('/')) return `${BASE_URL}${caminho}`;
+  if (!caminho) {
+    return '';
+  }
+
+  if (caminho.startsWith('http')) {
+    return caminho;
+  }
+
+  if (caminho.startsWith('/')) {
+    return `${BASE_URL}${caminho}`;
+  }
+
   return `${BASE_URL}/media/${caminho}`;
 }
 
@@ -316,6 +403,7 @@ export {
   API_URL,
   buscarUsuarioSalvo,
   limparTokens,
+  logoutUsuario,
   marcar2FAPendente,
   requisicaoAutenticada,
   salvarUsuario,
