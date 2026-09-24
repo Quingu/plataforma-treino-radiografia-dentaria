@@ -10,3 +10,7 @@ python manage.py collectstatic --no-input
 
 echo "Aplicando migrações no banco de dados (Supabase)..."
 python manage.py migrate
+
+
+echo "Criando conta inicial do suporte, caso ainda não exista..."
+python manage.py criar_admin_suporte
