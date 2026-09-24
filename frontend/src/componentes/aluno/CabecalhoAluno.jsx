@@ -12,6 +12,7 @@ export default function CabecalhoAluno({
   aoAlternarMenu,
   aoEditarPerfil,
   aoTrocarSenha,
+  aoAbrirPrivacidade,
   aoSolicitarSair,
 }) {
   const abas = [
@@ -94,6 +95,7 @@ export default function CabecalhoAluno({
           email={email}
           aoEditar={aoEditarPerfil}
           aoTrocarSenha={aoTrocarSenha}
+          aoAbrirPrivacidade={aoAbrirPrivacidade}
           aoSair={aoSolicitarSair}
         />
       </div>
