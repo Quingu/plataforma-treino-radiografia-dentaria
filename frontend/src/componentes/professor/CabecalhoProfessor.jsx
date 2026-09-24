@@ -1,4 +1,4 @@
-import MenuPerfil from '../comum/MenuPerfil';
+import MenuPerfil from '../perfil/MenuPerfil';
 
 export default function CabecalhoProfessor({ 
   abaAtual, 
@@ -11,6 +11,7 @@ export default function CabecalhoProfessor({
   aoAlternarMenu,
   aoEditarPerfil,
   aoTrocarSenha,
+  aoAbrirPrivacidade,
   aoSolicitarSair
 }) {
   return (
@@ -68,6 +69,7 @@ export default function CabecalhoProfessor({
           email={email}
           aoEditar={aoEditarPerfil}
           aoTrocarSenha={aoTrocarSenha}
+          aoAbrirPrivacidade={aoAbrirPrivacidade}
           aoSair={aoSolicitarSair}
         />
       </div>
