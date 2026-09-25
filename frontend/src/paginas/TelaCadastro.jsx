@@ -5,7 +5,7 @@ import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 import { validarEmailPorPerfil } from '../utils/validacao';
 import { cadastrarUsuario, loginUsuario } from '../services/api';
 
-export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro }) {
+export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro, aoAbrirPrivacidade }) {
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -249,6 +249,24 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro })
           <div className="pt-4 border-t border-slate-800 text-center text-sm text-slate-400">
             Já possui uma conta?{" "}
             <button onClick={aoNavegarParaLogin} className="text-blue-400 font-semibold hover:text-blue-300 hover:underline cursor-pointer">Faça Login</button>
+          </div>
+
+          <div className="text-center text-xs text-slate-500">
+            <button
+              type="button"
+              onClick={aoAbrirPrivacidade}
+              className="text-slate-400 hover:text-blue-400 hover:underline cursor-pointer transition-colors"
+            >
+              Política de Privacidade
+            </button>
+            <span className="mx-2">•</span>
+            <button
+              type="button"
+              onClick={aoAbrirPrivacidade}
+              className="text-slate-400 hover:text-blue-400 hover:underline cursor-pointer transition-colors"
+            >
+              Termos de Uso
+            </button>
           </div>
         </div>
       </div>
