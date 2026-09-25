@@ -5,7 +5,6 @@ import ListaTarefasAluno from '../componentes/aluno/ListaTarefasAluno';
 import ModalEntrarTurma from '../componentes/aluno/ModalEntrarTurma';
 import ResolucaoTarefa from '../componentes/aluno/ResolucaoTarefa';
 import ModalPerfil from '../componentes/perfil/ModalPerfil';
-import ModalPrivacidade from '../componentes/perfil/ModalPrivacidade';
 import ModalConfirmacao from '../componentes/comum/ModalConfirmacao';
 import StatusMensagem from '../componentes/comum/StatusMensagem';
 import useDadosAluno from '../hooks/useDadosAluno';
@@ -14,7 +13,7 @@ import usePerfilUsuario from '../hooks/usePerfilUsuario';
 import { resolverTarefa } from '../services/api';
 import { obterIniciais } from '../utils/formatadores';
 
-export default function HomeAluno({ usuario, aoSair }) {
+export default function HomeAluno({ usuario, aoSair, aoIrParaPrivacidade }) {
   const [abaAtual, setAbaAtual] = useState('dashboard');
   const [tarefaAberta, setTarefaAberta] = useState(null);
   const [modalEntrar, setModalEntrar] = useState(false);
@@ -23,7 +22,6 @@ export default function HomeAluno({ usuario, aoSair }) {
   const [entrandoTurma, setEntrandoTurma] = useState(false);
   const [menuPerfil, setMenuPerfil] = useState(false);
   const [confirmarSair, setConfirmarSair] = useState(false);
-  const [privacidadeAberta, setPrivacidadeAberta] = useState(false);
   const [confirmarResposta, setConfirmarResposta] = useState(false);
   const [enviandoResposta, setEnviandoResposta] = useState(false);
   const [mensagemResposta, setMensagemResposta] = useState({ tipo: '', texto: '' });
@@ -154,7 +152,7 @@ export default function HomeAluno({ usuario, aoSair }) {
         }}
         aoAbrirPrivacidade={() => {
           setMenuPerfil(false);
-          setPrivacidadeAberta(true);
+          aoIrParaPrivacidade();
         }}
         aoSolicitarSair={() => {
           setMenuPerfil(false);
@@ -241,11 +239,6 @@ export default function HomeAluno({ usuario, aoSair }) {
         aoEnviar={perfil.solicitar}
         aoAlterarDados={perfil.alterar}
         aoEscolherFoto={perfil.escolherFoto}
-      />
-
-      <ModalPrivacidade
-        aberto={privacidadeAberta}
-        aoFechar={() => setPrivacidadeAberta(false)}
       />
 
       <ModalConfirmacao

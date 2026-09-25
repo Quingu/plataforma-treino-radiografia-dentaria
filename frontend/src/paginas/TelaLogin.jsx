@@ -4,7 +4,7 @@ import LogoMarca from '../componentes/LogoMarca';
 import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 import { concluirLogin2FA, limparTokens, loginUsuario } from '../services/api';
 
-export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
+export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin, aoAbrirPrivacidade }) {
   const [etapa, setEtapa] = useState(1);
 
   const [tipoUsuario, setTipoUsuario] = useState('aluno');
@@ -286,6 +286,24 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin }) {
               className="text-blue-400 font-semibold hover:text-blue-300 hover:underline cursor-pointer transition-colors"
             >
               Cadastre-se
+            </button>
+          </div>
+
+          <div className="text-center text-xs text-slate-500">
+            <button
+              type="button"
+              onClick={aoAbrirPrivacidade}
+              className="text-slate-400 hover:text-blue-400 hover:underline cursor-pointer transition-colors"
+            >
+              Política de Privacidade
+            </button>
+            <span className="mx-2">•</span>
+            <button
+              type="button"
+              onClick={aoAbrirPrivacidade}
+              className="text-slate-400 hover:text-blue-400 hover:underline cursor-pointer transition-colors"
+            >
+              Termos de Uso
             </button>
           </div>
         </div>

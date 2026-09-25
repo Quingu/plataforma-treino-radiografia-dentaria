@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TelaLogin from './paginas/TelaLogin';
 import TelaCadastro from './paginas/TelaCadastro';
 import TelaConfigurar2FA from './paginas/TelaConfigurar2FA';
+import TelaPrivacidade from './paginas/TelaPrivacidade';
 import HomeAluno from './paginas/HomeAluno';
 import HomeProfessor from './paginas/HomeProfessor';
 import {
@@ -13,12 +14,51 @@ import {
   temSessaoSalva,
 } from './services/api';
 
+const ROTA_PRIVACIDADE = '/privacidade';
+
+function telaInicial() {
+  if (window.location.pathname === ROTA_PRIVACIDADE) return 'PRIVACIDADE';
+  if (!temSessaoSalva()) return 'LOGIN';
+  return tem2FAPendente() ? 'CONFIGURAR_2FA' : 'HOME';
+}
+
 export default function App() {
   const [usuario, setUsuario] = useState(() => buscarUsuarioSalvo());
-  const [telaAtual, setTelaAtual] = useState(() => {
-    if (!temSessaoSalva()) return 'LOGIN';
-    return tem2FAPendente() ? 'CONFIGURAR_2FA' : 'HOME';
-  });
+  const [telaAtual, setTelaAtual] = useState(telaInicial);
+  const [origemPrivacidade, setOrigemPrivacidade] = useState(null);
+
+  // Sincroniza a tela com a URL (navegação do navegador e acesso direto).
+  useEffect(() => {
+    const sincronizarComUrl = () => {
+      if (window.location.pathname === ROTA_PRIVACIDADE) {
+        setTelaAtual('PRIVACIDADE');
+      } else {
+        setTelaAtual((atual) =>
+          atual === 'PRIVACIDADE' ? telaInicial() : atual,
+        );
+      }
+    };
+
+    window.addEventListener('popstate', sincronizarComUrl);
+    return () => window.removeEventListener('popstate', sincronizarComUrl);
+  }, []);
+
+  const irParaPrivacidade = () => {
+    setOrigemPrivacidade((origem) =>
+      telaAtual === 'PRIVACIDADE' ? origem : telaAtual,
+    );
+    window.history.pushState({}, '', ROTA_PRIVACIDADE);
+    setTelaAtual('PRIVACIDADE');
+  };
+
+  const voltarPrivacidade = () => {
+    const destino =
+      origemPrivacidade && origemPrivacidade !== 'PRIVACIDADE'
+        ? origemPrivacidade
+        : telaInicial();
+    window.history.pushState({}, '', '/');
+    setTelaAtual(destino);
+  };
 
   const handleLoginSucesso = (dadosLogin) => {
     const dadosUsuario = dadosLogin.usuario || dadosLogin;
@@ -54,6 +94,7 @@ export default function App() {
         <TelaLogin
           aoNavegarParaCadastro={() => setTelaAtual('CADASTRO')}
           aoFazerLogin={handleLoginSucesso}
+          aoAbrirPrivacidade={irParaPrivacidade}
         />
       )}
 
@@ -61,6 +102,7 @@ export default function App() {
         <TelaCadastro
           aoNavegarParaLogin={() => setTelaAtual('LOGIN')}
           aoConcluirCadastro={handleLoginSucesso}
+          aoAbrirPrivacidade={irParaPrivacidade}
         />
       )}
 
@@ -72,16 +114,25 @@ export default function App() {
         />
       )}
 
+      {telaAtual === 'PRIVACIDADE' && (
+        <TelaPrivacidade
+          autenticado={Boolean(usuario)}
+          aoVoltar={voltarPrivacidade}
+        />
+      )}
+
       {telaAtual === 'HOME' && (
         perfilUsuario === 'professor' ? (
           <HomeProfessor
             usuario={usuario}
             aoSair={handleSair}
+            aoIrParaPrivacidade={irParaPrivacidade}
           />
         ) : (
           <HomeAluno
             usuario={usuario}
             aoSair={handleSair}
+            aoIrParaPrivacidade={irParaPrivacidade}
           />
         )
       )}
