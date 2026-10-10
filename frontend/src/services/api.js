@@ -321,18 +321,18 @@ export async function listarTarefas() {
 }
 
 export async function criarTarefa({
-  casoClinico,
+  caso_Clinico,
   turma,
   instrucoes,
-  coordenadasGabarito,
+  coordenadas_Gabarito,
 }) {
   return requisicaoAutenticada('/tarefas/tarefas/', {
     method: 'POST',
     body: JSON.stringify({
-      caso_clinico: casoClinico,
+      caso_clinico: caso_Clinico,
       turma,
       instrucoes,
-      coordenadas_gabarito: coordenadasGabarito,
+      coordenadas_gabarito: coordenadas_Gabarito,
     }),
   });
 }
