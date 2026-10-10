@@ -100,6 +100,7 @@ export default function HomeAluno({ usuario, aoSair, aoIrParaPrivacidade }) {
       });
       
       setAbaAtual('dashboard');
+      await dados.atualizarGamificacao();
     } catch (erro) {
       setMensagemResposta({
         tipo: 'erro',
@@ -173,6 +174,8 @@ export default function HomeAluno({ usuario, aoSair, aoIrParaPrivacidade }) {
             metricas={metricas}
             tarefasRecentes={dados.recentes}
             aoAbrirTarefa={abrirTarefa}
+            gamificacao={dados.gamificacao}
+            carregandoGamificacao={dados.carregandoGamificacao}
           />
         )}
         

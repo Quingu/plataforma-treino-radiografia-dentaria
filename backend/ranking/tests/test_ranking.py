@@ -19,9 +19,9 @@ class TestPerfilGamificacao:
             (900, 10, 'Cobre'),
             (1000, 11, 'Ferro'),
             (2000, 21, 'Bronze'),
-            (3000, 31, 'Prata'),
-            (4000, 41, 'Ouro'),
-            (5000, 51, 'Platina'),
+            (3000, 31, 'Ouro'),
+            (4000, 41, 'Platina'),
+            (5000, 51, 'Diamante'),
             (6000, 61, 'Mestre'),
             (7000, 71, 'Grão-Mestre'),
             (8000, 81, 'Supremo'),
@@ -180,3 +180,70 @@ class TestRankingAlunosView:
         assert resposta.data[0]['posicao'] == 1
         assert resposta.data[1]['nome_aluno'] == 'Ana'
         assert resposta.data[1]['posicao'] == 2
+
+
+@pytest.mark.django_db
+class TestMeuPerfilGamificacaoView:
+
+    def setup_method(self):
+        self.cliente = APIClient()
+
+        self.aluno = Usuario.objects.create_user(
+            email='eu@teste.com',
+            password='senha123',
+            nome='Eu',
+            perfil='aluno',
+        )
+
+        self.outro = Usuario.objects.create_user(
+            email='outro@teste.com',
+            password='senha123',
+            nome='Outro',
+            perfil='aluno',
+        )
+
+        PerfilGamificacao.objects.create(aluno=self.aluno, xp_total=250)
+        PerfilGamificacao.objects.create(aluno=self.outro, xp_total=500)
+
+        self.url = reverse('ranking-meu-perfil')
+
+    def test_retorna_perfil_do_aluno_autenticado(self):
+        self.cliente.force_authenticate(user=self.aluno)
+
+        resposta = self.cliente.get(self.url)
+
+        assert resposta.status_code == 200
+        assert resposta.data['xp_total'] == 250
+        assert resposta.data['nivel'] == 3
+        assert resposta.data['classe'] == 'Cobre'
+        assert resposta.data['progresso_nivel'] == 50
+        assert resposta.data['xp_para_proximo_nivel'] == 50
+        assert resposta.data['nivel_maximo'] is False
+        assert resposta.data['posicao'] == 2
+
+    def test_aluno_novo_recebe_perfil_zerado(self):
+        novato = Usuario.objects.create_user(
+            email='novato@teste.com',
+            password='senha123',
+            perfil='aluno',
+        )
+        self.cliente.force_authenticate(user=novato)
+
+        resposta = self.cliente.get(self.url)
+
+        assert resposta.status_code == 200
+        assert resposta.data['xp_total'] == 0
+        assert resposta.data['nivel'] == 1
+        assert resposta.data['classe'] == 'Cobre'
+
+    def test_nao_expoe_perfil_de_outro_aluno(self):
+        self.cliente.force_authenticate(user=self.aluno)
+
+        resposta = self.cliente.get(self.url)
+
+        assert resposta.data['xp_total'] == 250
+
+    def test_exige_autenticacao(self):
+        resposta = self.cliente.get(self.url)
+
+        assert resposta.status_code in (401, 403)

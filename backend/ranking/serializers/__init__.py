@@ -1,1 +1,1 @@
-from .ranking_serializer import RankingSerializer
+from .ranking_serializer import MeuPerfilGamificacaoSerializer, RankingSerializer

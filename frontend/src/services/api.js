@@ -393,6 +393,10 @@ export async function excluirCasoClinico(id) {
   });
 }
 
+export async function obterMeuPerfilGamificacao() {
+  return requisicaoAutenticada('/ranking/meu-perfil/');
+}
+
 export function resolverUrlImagem(caminho) {
   if (!caminho) {
     return '';

@@ -1,5 +1,6 @@
 import CartaoMetrica from '../comum/CartaoMetrica';
 import TabelaVazia from '../comum/TabelaVazia';
+import PainelRankingAluno from './PainelRankingAluno';
 import { formatarData } from '../../utils/formatadores';
 
 export default function DashboardAluno({
@@ -7,6 +8,8 @@ export default function DashboardAluno({
   metricas,
   tarefasRecentes,
   aoAbrirTarefa,
+  gamificacao,
+  carregandoGamificacao,
 }) {
   return (
     <div className="space-y-8">
@@ -19,6 +22,11 @@ export default function DashboardAluno({
           Acompanhe seu desempenho e suas atividades.
         </p>
       </div>
+
+      <PainelRankingAluno
+        gamificacao={gamificacao}
+        carregando={carregandoGamificacao}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {metricas.map(([titulo, valor, descricao]) => (

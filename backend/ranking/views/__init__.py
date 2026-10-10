@@ -1,1 +1,1 @@
-from .ranking_view import RankingAlunosView
+from .ranking_view import MeuPerfilGamificacaoView, RankingAlunosView

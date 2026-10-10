@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { entrarTurmaComCodigo, listarTarefas, listarTurmas } from '../services/api';
+import { entrarTurmaComCodigo, listarTarefas, listarTurmas, obterMeuPerfilGamificacao } from '../services/api';
 
 const normalizarTurma = (turma) => ({
   ...turma,
@@ -15,6 +15,8 @@ export default function useDadosAluno() {
   const [erro, setErro] = useState('');
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState('todas');
+  const [gamificacao, setGamificacao] = useState(null);
+  const [carregandoGamificacao, setCarregandoGamificacao] = useState(true);
 
   const carregar = async () => {
     setCarregando(true);
@@ -35,6 +37,22 @@ export default function useDadosAluno() {
 
   useEffect(() => {
     carregar();
+  }, []);
+
+  
+  const atualizarGamificacao = async () => {
+    setCarregandoGamificacao(true);
+    try {
+      setGamificacao(await obterMeuPerfilGamificacao());
+    } catch {
+      setGamificacao(null);
+    } finally {
+      setCarregandoGamificacao(false);
+    }
+  };
+
+  useEffect(() => {
+    atualizarGamificacao();
   }, []);
 
   const pendentes = useMemo(() => 
@@ -95,6 +113,9 @@ export default function useDadosAluno() {
     recentes: [...tarefas]
       .sort((a, b) => new Date(b.criado_em || 0) - new Date(a.criado_em || 0))
       .slice(0, 5),
-    entrar
+    entrar,
+    gamificacao,
+    carregandoGamificacao,
+    atualizarGamificacao
   };
 }
