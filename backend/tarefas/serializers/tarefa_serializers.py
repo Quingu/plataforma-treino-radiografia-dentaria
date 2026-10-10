@@ -6,7 +6,6 @@ from radiografias.services.acesso_radiografia_service import registrar_acesso_ra
 class TarefaSerializer(serializers.ModelSerializer):
     caso_clinico_titulo = serializers.CharField(source='caso_clinico.titulo', read_only=True)
     caso_clinico_imagem_url = serializers.SerializerMethodField()
-    coordenadas_gabarito = serializers.SerializerMethodField()
     turma_nome = serializers.CharField(source='turma.nome', read_only=True)
     resolvida = serializers.SerializerMethodField()
 
@@ -44,12 +43,13 @@ class TarefaSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(url)
         return url
 
-    def get_coordenadas_gabarito(self, obj):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
         request = self.context.get('request')
-        if request and request.user.is_authenticated and request.user.perfil == 'professor':
-            if obj.turma.professor_id == request.user.id:
-                return obj.coordenadas_gabarito
-        return None
+        if not request or not request.user.is_authenticated or request.user.perfil != 'professor' or instance.turma.professor_id != request.user.id:
+            data['coordenadas_gabarito'] = None
+            
+        return data
 
     def validate(self, attrs):
         request = self.context.get('request')

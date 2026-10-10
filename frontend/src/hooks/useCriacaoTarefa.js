@@ -47,10 +47,10 @@ export default function useCriacaoTarefa(turmas = []) {
 
     try {
       await criarTarefa({
-        casoClinico: radiografiaSelecionada.id,
+        caso_Clinico: radiografiaSelecionada.id,
         turma: detalhesTarefa.turmaId,
         instrucoes: `${detalhesTarefa.titulo.trim()}\n\n${detalhesTarefa.instrucoes.trim()}`,
-        coordenadasGabarito: desenho.marcacao,
+        coordenadas_Gabarito: desenho.marcacao,
       });
       cancelarCriacao();
     } catch (erro) {
