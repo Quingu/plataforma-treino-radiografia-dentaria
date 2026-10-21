@@ -13,6 +13,7 @@ class TesteCriacaoTarefa:
         self.professor = Usuario.objects.create_user(email='prof.tarefa@teste.com', password='123', perfil='professor')
         self.turma = Turma.objects.create(nome="Radiologia 101", professor=self.professor)
         self.aluno = Usuario.objects.create_user(email='aluno.tarefa@teste.com', password='123', perfil='aluno')
+        self.turma.alunos.add(self.aluno)
         self.caso = CasoClinico.objects.create(
             titulo="Cárie Oculta",
             regiao_anatomica="dentes",

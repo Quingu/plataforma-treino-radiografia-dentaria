@@ -224,3 +224,11 @@ SCALEWAY_BIBLIOTECA_PUBLICA_PREFIX = os.getenv(
     'SCALEWAY_BIBLIOTECA_PUBLICA_PREFIX',
     'radiografias/',
 )
+
+SCALEWAY_MODELOS_3D_PREFIX = os.getenv(
+    'SCALEWAY_MODELOS_3D_PREFIX',
+    'modelos_3d/',
+)
+
+# Limite de tamanho para arquivos .glb (50 MB por padrão).
+MODELO_3D_MAX_BYTES = int(os.getenv('MODELO_3D_MAX_BYTES', str(50 * 1024 * 1024)))

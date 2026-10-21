@@ -22,6 +22,8 @@ export default function useBibliotecaRadiografias() {
         lista.map((caso) => ({
           ...caso,
           url: resolverUrlImagem(caso.imagem_url || caso.imagem),
+          modeloUrl: caso.modelo_3d_url || '',
+          ehModelo3D: caso.tipo_midia === 'modelo_3d',
         }))
       );
     } catch (erro) {
@@ -52,6 +54,8 @@ export default function useBibliotecaRadiografias() {
         {
           ...novoCaso,
           url: resolverUrlImagem(novoCaso.imagem_url || novoCaso.imagem),
+          modeloUrl: novoCaso.modelo_3d_url || '',
+          ehModelo3D: novoCaso.tipo_midia === 'modelo_3d',
         },
         ...atuais,
       ]);

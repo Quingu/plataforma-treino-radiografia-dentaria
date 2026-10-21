@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import CabecalhoProfessor from '../componentes/professor/CabecalhoProfessor';
 import DashboardProfessor from '../componentes/professor/DashboardProfessor';
 import GerenciarTurmas from '../componentes/professor/GerenciarTurmas';
@@ -18,6 +18,10 @@ import useCriacaoTarefa from '../hooks/useCriacaoTarefa';
 import usePerfilUsuario from '../hooks/usePerfilUsuario';
 import { obterIniciais } from '../utils/formatadores';
 
+const EstudioCriarTarefa3D = lazy(
+  () => import('../componentes/professor/EstudioCriarTarefa3D'),
+);
+
 export default function HomeProfessor({ usuario, aoSair, aoIrParaPrivacidade }) {
   // Controle básico de abas e menus da página
   const [abaAtual, setAbaAtual] = useState('dashboard');
@@ -33,11 +37,35 @@ export default function HomeProfessor({ usuario, aoSair, aoIrParaPrivacidade }) 
 
   const nomeProfessor = perfil.dados.nome || 'Professor';
 
-  // Se o professor selecionou uma radiografia para criar uma tarefa, 
+  // Se o professor selecionou um caso para criar uma tarefa,
+  // o estúdio escolhe entre o editor 2D e o editor 3D.
   if (criacaoTarefa.radiografiaSelecionada) {
+    const casoSelecionado = criacaoTarefa.radiografiaSelecionada;
+    const caso3D =
+      casoSelecionado.ehModelo3D || casoSelecionado.tipo_midia === 'modelo_3d';
+
+    if (caso3D) {
+      return (
+        <Suspense
+          fallback={
+            <div className="flex min-h-screen items-center justify-center bg-[#0d131d] text-sm text-slate-400">
+              Carregando estúdio 3D...
+            </div>
+          }
+        >
+          <EstudioCriarTarefa3D
+            caso={casoSelecionado}
+            turmas={criacaoTarefa.turmas}
+            aoCancelar={criacaoTarefa.cancelarCriacao}
+            aoConcluir={criacaoTarefa.cancelarCriacao}
+          />
+        </Suspense>
+      );
+    }
+
     return (
       <EstudioCriarTarefa 
-        radiografia={criacaoTarefa.radiografiaSelecionada}
+        radiografia={casoSelecionado}
         desenho={criacaoTarefa.desenho}
         detalhes={criacaoTarefa.detalhesTarefa}
         aoMudarDetalhes={criacaoTarefa.setDetalhesTarefa}

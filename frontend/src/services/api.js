@@ -315,8 +315,9 @@ export async function excluirTurma(id) {
   });
 }
 
-export async function listarTarefas() {
-  const dados = await requisicaoAutenticada('/tarefas/tarefas/');
+export async function listarTarefas(tipo) {
+  const parametros = tipo ? `?tipo=${encodeURIComponent(tipo)}` : '';
+  const dados = await requisicaoAutenticada(`/tarefas/${parametros}`);
   return Array.isArray(dados) ? dados : dados.results || [];
 }
 
@@ -325,29 +326,49 @@ export async function criarTarefa({
   turma,
   instrucoes,
   coordenadas_Gabarito,
+  tipo,
+  gabarito,
 }) {
-  return requisicaoAutenticada('/tarefas/tarefas/', {
+  const corpo = {
+    caso_clinico: caso_Clinico,
+    turma,
+    instrucoes,
+  };
+
+  if (tipo) {
+    corpo.tipo = tipo;
+  }
+
+  if (gabarito) {
+    corpo.gabarito = gabarito;
+  } else {
+    corpo.coordenadas_gabarito = coordenadas_Gabarito;
+  }
+
+  return requisicaoAutenticada('/tarefas/', {
     method: 'POST',
-    body: JSON.stringify({
-      caso_clinico: caso_Clinico,
-      turma,
-      instrucoes,
-      coordenadas_gabarito: coordenadas_Gabarito,
-    }),
+    body: JSON.stringify(corpo),
   });
 }
 
-export async function resolverTarefa(id, coordenadasSubmetidas) {
-  return requisicaoAutenticada(`/tarefas/tarefas/${id}/resolver/`, {
+export async function resolverTarefa(id, resposta) {
+  return requisicaoAutenticada(`/tarefas/${id}/resolver/`, {
     method: 'POST',
-    body: JSON.stringify({
-      coordenadas_submetidas: coordenadasSubmetidas,
-    }),
+    body: JSON.stringify({ resposta }),
   });
 }
 
-export async function listarCasosClinicos() {
-  const dados = await requisicaoAutenticada('/radiografias/casos-clinicos/');
+export async function obterCasoClinico(id) {
+  return requisicaoAutenticada(`/radiografias/radiografias/${id}/`);
+}
+
+export async function listarCasosClinicos(tipoMidia) {
+  const parametros = tipoMidia
+    ? `?tipo_midia=${encodeURIComponent(tipoMidia)}`
+    : '';
+  const dados = await requisicaoAutenticada(
+    `/radiografias/casos-clinicos/${parametros}`,
+  );
   return Array.isArray(dados) ? dados : dados.results || [];
 }
 
