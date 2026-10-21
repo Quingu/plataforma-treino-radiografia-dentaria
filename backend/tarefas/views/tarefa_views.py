@@ -14,6 +14,12 @@ class CriarListaTarefaView(generics.ListCreateAPIView):
         queryset = Tarefa.objects.select_related('caso_clinico', 'turma').order_by('-criado_em')
 
         if user.perfil == 'professor':
-            return queryset.filter(turma__professor=user)
+            queryset = queryset.filter(turma__professor=user)
+        else:
+            queryset = queryset.filter(turma__alunos=user)
 
-        return queryset.filter(turma__alunos=user)
+        tipo = self.request.query_params.get('tipo')
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+
+        return queryset

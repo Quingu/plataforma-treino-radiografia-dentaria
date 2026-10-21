@@ -25,7 +25,10 @@ class ResolverTarefaView(generics.CreateAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request, 'tarefa': tarefa},
+        )
 
         if serializer.is_valid():
             resolucao = serializer.save(
@@ -38,7 +41,10 @@ class ResolverTarefaView(generics.CreateAPIView):
             PerfilGamificacao.conceder_xp_por_resolucao(resolucao)
 
             return Response(
-                ResolucaoSerializer(resolucao).data,
+                ResolucaoSerializer(
+                    resolucao,
+                    context={'request': request, 'tarefa': tarefa},
+                ).data,
                 status=status.HTTP_201_CREATED
             )
 

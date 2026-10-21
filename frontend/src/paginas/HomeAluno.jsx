@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import CabecalhoAluno from '../componentes/aluno/CabecalhoAluno';
 import DashboardAluno from '../componentes/aluno/DashboardAluno';
 import ListaTarefasAluno from '../componentes/aluno/ListaTarefasAluno';
@@ -12,6 +12,10 @@ import useDesenhoMarcacao from '../hooks/useDesenhoMarcacao';
 import usePerfilUsuario from '../hooks/usePerfilUsuario';
 import { resolverTarefa } from '../services/api';
 import { obterIniciais } from '../utils/formatadores';
+
+const ResolucaoTarefa3D = lazy(
+  () => import('../componentes/aluno/ResolucaoTarefa3D'),
+);
 
 export default function HomeAluno({ usuario, aoSair, aoIrParaPrivacidade }) {
   const [abaAtual, setAbaAtual] = useState('dashboard');
@@ -110,6 +114,42 @@ export default function HomeAluno({ usuario, aoSair, aoIrParaPrivacidade }) {
       setEnviandoResposta(false);
     }
   };
+
+  const tratarResolucao3D = (resposta) => {
+    if (!tarefaAberta) return;
+
+    const atualizada = {
+      ...tarefaAberta,
+      resolvida: true,
+      acertou: resposta.acertou,
+    };
+
+    setTarefaAberta(atualizada);
+    dados.setTarefas((anteriores) =>
+      anteriores.map((tarefa) =>
+        tarefa.id === atualizada.id ? atualizada : tarefa,
+      ),
+    );
+    dados.atualizarGamificacao();
+  };
+
+  if (tarefaAberta?.tipo === 'modelo_3d') {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center bg-[#0d131d] text-sm text-slate-400">
+            Carregando atividade 3D...
+          </div>
+        }
+      >
+        <ResolucaoTarefa3D
+          tarefa={tarefaAberta}
+          aoVoltar={voltarTarefas}
+          aoResolvido={tratarResolucao3D}
+        />
+      </Suspense>
+    );
+  }
 
   if (tarefaAberta) {
     return (

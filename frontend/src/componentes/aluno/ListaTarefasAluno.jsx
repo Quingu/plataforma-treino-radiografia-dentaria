@@ -67,9 +67,17 @@ export default function ListaTarefasAluno({
               >
                 <div className="p-4 flex justify-between">
                   <div>
-                    <h3 className="font-bold text-white text-sm">
-                      {tarefa.caso_clinico_titulo || 'Tarefa sem título'}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-white text-sm">
+                        {tarefa.caso_clinico_titulo || 'Tarefa sem título'}
+                      </h3>
+
+                      {tarefa.tipo === 'modelo_3d' && (
+                        <span className="rounded-full border border-sky-500/40 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold text-sky-300">
+                          3D
+                        </span>
+                      )}
+                    </div>
 
                     <p className="text-xs text-blue-200 mt-1">
                       Turma: {tarefa.turma_nome || 'Turma vinculada'}

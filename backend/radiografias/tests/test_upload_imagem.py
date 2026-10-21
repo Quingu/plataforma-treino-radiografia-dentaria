@@ -55,6 +55,7 @@ class TesteUploadCasoClinico:
             descricao="Analisar limites da lesão.",
             regiao_anatomica="maxila",
             imagem="radiografias/2026/09/teste.jpg",
+            visibilidade=CasoClinico.Visibilidade.COMPARTILHADA,
             professor=self.professor
         )
 
