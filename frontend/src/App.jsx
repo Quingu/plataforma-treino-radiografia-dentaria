@@ -67,6 +67,7 @@ export default function App() {
       nome: dadosUsuario.nome || dadosLogin.nomeCompleto,
       email: dadosUsuario.email || dadosLogin.email,
       perfil: dadosUsuario.perfil || dadosUsuario.tipoUsuario || dadosLogin.perfil || dadosLogin.tipoUsuario || 'aluno',
+      foto_perfil_url: dadosUsuario.foto_perfil_url || dadosUsuario.fotoUrl || '',
     };
 
     salvarUsuario(usuarioLogado);

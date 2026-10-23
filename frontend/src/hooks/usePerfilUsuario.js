@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { atualizarPerfil, salvarUsuario } from '../services/api';
+import { useEffect, useRef, useState } from 'react';
+import { atualizarPerfil, obterPerfil, salvarUsuario } from '../services/api';
 
 export default function usePerfilUsuario(usuario) {
   const [aberto, setAberto] = useState(false);
@@ -17,6 +17,46 @@ export default function usePerfilUsuario(usuario) {
   const [confirmar, setConfirmar] = useState(false);
   
   const fotoInputRef = useRef(null);
+
+  // A URL da foto é assinada e expira; busca uma nova ao montar a home.
+  useEffect(() => {
+    let ativo = true;
+
+    if (!usuario?.id) {
+      return undefined;
+    }
+
+    obterPerfil()
+      .then((perfil) => {
+        if (!ativo) {
+          return;
+        }
+
+        setDados((atual) => ({
+          ...atual,
+          nome: perfil.nome ?? atual.nome,
+          email: perfil.email ?? atual.email,
+          fotoUrl: atual.fotoArquivo
+            ? atual.fotoUrl
+            : perfil.foto_perfil_url || '',
+        }));
+
+        salvarUsuario({
+          ...usuario,
+          nome: perfil.nome ?? usuario.nome,
+          email: perfil.email ?? usuario.email,
+          perfil: perfil.perfil ?? usuario.perfil,
+          foto_perfil_url: perfil.foto_perfil_url || '',
+        });
+      })
+      .catch(() => {
+        // Mantém os dados salvos localmente se a consulta falhar.
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [usuario]);
 
   const abrir = (novoModo) => {
     setModo(novoModo);
