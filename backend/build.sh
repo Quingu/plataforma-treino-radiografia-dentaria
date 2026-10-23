@@ -11,3 +11,8 @@ python manage.py collectstatic --no-input
 echo "Aplicando migrações no banco de dados (Supabase)..."
 python manage.py migrate
 
+echo "Aplicando migrações no banco de dados (Supabase)..."
+python manage.py migrate
+
+echo "Importando modelos 3D do Scaleway..."
+python manage.py importar_modelos_3d_scaleway
