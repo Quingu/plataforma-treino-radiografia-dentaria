@@ -2,8 +2,11 @@ export default function SeletorModelo3D({
   modelos,
   aoSelecionar,
   aoExcluir,
+  usuarioId,
 }) {
   const lista = Array.isArray(modelos) ? modelos : [];
+  const podeExcluir = (modelo) =>
+    Boolean(usuarioId) && String(modelo.professor) === String(usuarioId);
 
   if (!lista.length) {
     return (
@@ -43,13 +46,15 @@ export default function SeletorModelo3D({
               >
                 Criar atividade 3D
               </button>
-              <button
-                type="button"
-                onClick={() => aoExcluir(modelo.id)}
-                className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-red-500 hover:text-red-300"
-              >
-                Excluir
-              </button>
+              {podeExcluir(modelo) && (
+                <button
+                  type="button"
+                  onClick={() => aoExcluir(modelo.id)}
+                  className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-red-500 hover:text-red-300"
+                >
+                  Excluir
+                </button>
+              )}
             </div>
           </div>
         </article>

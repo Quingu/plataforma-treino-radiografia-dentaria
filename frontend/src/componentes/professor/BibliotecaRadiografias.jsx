@@ -8,15 +8,19 @@ export default function BibliotecaRadiografias({
   aoFazerUpload,
   aoCriarTarefa,
   aoExcluir,
+  usuarioId,
 }) {
   const [somente3D, setSomente3D] = useState(false);
 
   const listaRadiografias = Array.isArray(radiografias) ? radiografias : [];
-  const listaExibida = somente3D
-    ? listaRadiografias.filter(
-        (rx) => rx.ehModelo3D || rx.tipo_midia === 'modelo_3d',
-      )
-    : listaRadiografias;
+  const podeExcluir = (radiografia) =>
+    Boolean(usuarioId) &&
+    String(radiografia.professor) === String(usuarioId);
+  const ehModelo3D = (radiografia) =>
+    radiografia.ehModelo3D || radiografia.tipo_midia === 'modelo_3d';
+  const listaExibida = listaRadiografias.filter((radiografia) =>
+    somente3D ? ehModelo3D(radiografia) : !ehModelo3D(radiografia),
+  );
 
   return (
     <section className="space-y-6">
@@ -71,6 +75,7 @@ export default function BibliotecaRadiografias({
           modelos={listaExibida}
           aoSelecionar={aoCriarTarefa}
           aoExcluir={aoExcluir}
+          usuarioId={usuarioId}
         />
       ) : listaExibida.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-400">
@@ -117,12 +122,14 @@ export default function BibliotecaRadiografias({
                     >
                       {eh3D ? 'Criar atividade 3D' : 'Criar tarefa'}
                     </button>
-                    <button
-                      onClick={() => aoExcluir(rx.id)}
-                      className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-red-500 hover:text-red-300"
-                    >
-                      Excluir
-                    </button>
+                    {podeExcluir(rx) && (
+                      <button
+                        onClick={() => aoExcluir(rx.id)}
+                        className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-red-500 hover:text-red-300"
+                      >
+                        Excluir
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>

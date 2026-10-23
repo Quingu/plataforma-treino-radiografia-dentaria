@@ -142,6 +142,7 @@ export default function HomeProfessor({ usuario, aoSair, aoIrParaPrivacidade }) 
             aoFazerUpload={() => biblioteca.setModalUpload(true)} 
             aoCriarTarefa={criacaoTarefa.iniciarCriacao} 
             aoExcluir={biblioteca.excluirRadiografia}
+            usuarioId={usuario?.id}
           />
         )}
       </main>

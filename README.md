@@ -212,6 +212,13 @@ Para importar os modelos `.glb` institucionais do bucket Scaleway:
 python manage.py importar_modelos_3d_scaleway
 ```
 
+Se arquivos forem removidos diretamente do bucket, remova os casos órfãos com:
+
+```bash
+python manage.py limpar_casos_sem_midia --dry-run
+python manage.py limpar_casos_sem_midia
+```
+
 Para aplicar a retenção de dados, agende diariamente:
 
 ```bash
