@@ -108,21 +108,24 @@ export default function HomeProfessor({ usuario, aoSair, aoIrParaPrivacidade }) 
       />
 
       <main className="w-full max-w-7xl mx-auto px-6 py-8 flex-1">
-        {dados.carregando && <p className="text-slate-400">Carregando dados...</p>}
-        
-        {!dados.carregando && dados.erro && (
-          <StatusMensagem mensagem={{ tipo: 'erro', texto: dados.erro }} />
-        )}
-
-        {!dados.carregando && !dados.erro && abaAtual === 'dashboard' && (
-          <DashboardProfessor 
+        {abaAtual === 'dashboard' && (
+          <DashboardProfessor
             nome={nomeProfessor.split(' ')[0]}
-            metricas={dados.metricas} 
-            tarefasRecentes={dados.recentes}
+            dados={dados.dados}
+            carregando={dados.carregando}
+            erro={dados.erro}
+            filtros={dados.filtros}
+            intervalo={dados.intervalo}
+            temFiltrosAtivos={dados.temFiltrosAtivos}
+            limiteRecentes={dados.limiteRecentes}
+            aoAlterarLimiteRecentes={dados.alterarLimiteRecentes}
+            aoMudarFiltro={dados.atualizarFiltro}
+            aoLimparFiltros={dados.limparFiltros}
+            aoRecarregar={dados.recarregar}
           />
         )}
-        
-        {!dados.carregando && !dados.erro && abaAtual === 'turmas' && (
+
+        {abaAtual === 'turmas' && (
           <GerenciarTurmas 
             turmas={gestaoTurmas.turmas}
             busca={gestaoTurmas.busca}
@@ -134,7 +137,7 @@ export default function HomeProfessor({ usuario, aoSair, aoIrParaPrivacidade }) 
           />
         )}
         
-        {!dados.carregando && !dados.erro && abaAtual === 'biblioteca' && (
+        {abaAtual === 'biblioteca' && (
           <BibliotecaRadiografias 
             radiografias={biblioteca.filtradas}
             busca={biblioteca.busca}

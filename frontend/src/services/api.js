@@ -321,6 +321,21 @@ export async function listarTarefas(tipo) {
   return Array.isArray(dados) ? dados : dados.results || [];
 }
 
+export async function obterDashboardProfessor(filtros = {}) {
+  const parametros = new URLSearchParams();
+
+  Object.entries(filtros).forEach(([chave, valor]) => {
+    if (valor !== undefined && valor !== null && valor !== '') {
+      parametros.set(chave, valor);
+    }
+  });
+
+  const consulta = parametros.toString();
+  const sufixo = consulta ? `?${consulta}` : '';
+
+  return requisicaoAutenticada(`/tarefas/dashboard-professor/${sufixo}`);
+}
+
 export async function criarTarefa({
   caso_Clinico,
   turma,

@@ -1,10 +1,13 @@
 from django.urls import path
+from tarefas.views.dashboard_view import DashboardProfessorView
 from tarefas.views.tarefa_views import CriarListaTarefaView
 from tarefas.views.resolucao_view import ResolverTarefaView
 
 urlpatterns = [
-    # Rota canônica: /api/tarefas/
+    # Rota /api/tarefas/
     path('', CriarListaTarefaView.as_view(), name='listar-criar-tarefas'),
+    path(
+        'dashboard-professor/', DashboardProfessorView.as_view(), name='dashboard-professor',),
     path('<uuid:pk>/resolver/', ResolverTarefaView.as_view(), name='resolver-tarefa'),
 
     # Mantém compatibilidade com o prefixo duplicado antigo: /api/tarefas/tarefas/
