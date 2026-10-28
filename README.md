@@ -102,7 +102,7 @@ Django REST Framework
 ## Funcionalidades
 
 - **Gamificação:** Geração de xp ao acertar a resposta nas tarefas e criação de Rankings.
-- **Painel do Professor:** Criação de turmas, geração de convites, biblioteca de radiografias 2D e modelos 3D, "Estúdio de Anotação" 2D (*click & drag*) e criação de atividades 3D com ponto de referência e tolerância.
+- **Painel do Professor:** Criação de turmas, geração de convites, biblioteca de radiografias 2D e modelos 3D, "Estúdio de Anotação" 2D (*click & drag*), criação de atividades 3D com ponto de referência e tolerância, e dashboard com filtros, indicadores consolidados e gráficos de acompanhamento.
 - **Painel do Aluno:** Ingresso em turmas por código, mural de tarefas, resolução 2D baseada em áreas percentuais (0-100%) e resolução 3D com clique direto no modelo.
 - **Modelos 3D:** Visualização com rotação, zoom e marcação convertida para o espaço local do arquivo GLB; a correção por distância é feita no servidor.
 
@@ -137,6 +137,7 @@ Base local: `http://localhost:8000/api`
 | `GET`, `POST` | `/radiografias/casos-clinicos/` | Lista a biblioteca ou inclui caso clínico 2D/3D. Aceita `?tipo_midia=radiografia_2d` ou `?tipo_midia=modelo_3d`. |
 | `GET`, `DELETE` | `/radiografias/radiografias/<uuid>/` | Consulta ou exclui um caso clínico do professor proprietário. |
 | `GET`, `POST` | `/tarefas/` | Lista tarefas autorizadas ou cria tarefa como professor. Aceita `?tipo=radiografia_2d` ou `?tipo=modelo_3d`. |
+| `GET` | `/tarefas/dashboard-professor/` | Retorna indicadores, séries para gráficos e tarefas recentes das turmas do professor autenticado. Aceita `data_inicio`, `data_fim`, `turma_id`, `tipo`, `aluno_id` e `limite`. |
 | `POST` | `/tarefas/<uuid>/resolver/` | Envia a resolução do aluno para correção no servidor. |
 | `GET` | `/ranking/` | Retorna o ranking de alunos. |
 
