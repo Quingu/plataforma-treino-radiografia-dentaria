@@ -24,8 +24,8 @@ class TesteDeAutenticacaoJWT:
         resposta = self.cliente.post(self.url_token, dados, format='json')
         
         assert resposta.status_code == 200
-        assert 'access' in resposta.data
-        assert 'refresh' in resposta.data
+        # Os tokens JWT são entregues em cookies httpOnly, não no corpo.
         assert 'access_token' in resposta.cookies
         assert 'refresh_token' in resposta.cookies
+        assert resposta.data['usuario']['email'] == 'aluno.login@email.com'
      

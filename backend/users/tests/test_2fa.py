@@ -32,6 +32,30 @@ class TesteDeConfiguracao2FA:
         assert 'RadioDent' in uri
         assert 'aluno.2fa%40email.com' in uri or self.usuario.email in uri.replace('%40', '@')
 
+    def test_chave_retornada_deve_ser_a_chave_plana_e_nao_o_token_criptografado(self):
+        resposta = self.cliente.post(self.url_configurar_2fa, format='json')
+
+        chave_retornada = resposta.data['chave_secreta']
+        self.usuario.refresh_from_db()
+
+        # A chave devolvida precisa ser base32 (usável no autenticador),
+        # e não o token Fernet armazenado no banco.
+        assert chave_retornada == self.usuario.obter_chave_2fa()
+        assert chave_retornada != self.usuario.chave_secreta_2fa
+        assert pyotp.TOTP(chave_retornada).now().isdigit()
+
+    def test_qr_code_deve_ser_valido_para_o_codigo_gerado_pelo_autenticador(self):
+        resposta = self.cliente.post(self.url_configurar_2fa, format='json')
+        chave = resposta.data['chave_secreta']
+
+        uri = resposta.data['uri_qr_code']
+        chave_da_uri = uri.split('secret=')[1].split('&')[0]
+
+        assert chave_da_uri == chave
+        assert pyotp.TOTP(chave_da_uri).now() == pyotp.TOTP(
+            self.usuario.obter_chave_2fa()
+        ).now()
+
     def test_nao_deve_permitir_configuracao_sem_estar_logado(self):
         self.cliente.logout()
         resposta = self.cliente.post(self.url_configurar_2fa, format='json')
@@ -56,7 +80,7 @@ class TesteDeVerificacao2FA:
         self.url_verificar_2fa = '/api/auth/2fa/verificar/'
 
     def test_deve_validar_codigo_totp_correto_com_sucesso(self):
-        totp = pyotp.TOTP(self.usuario.chave_secreta_2fa)
+        totp = pyotp.TOTP(self.usuario.obter_chave_2fa())
         codigo_valido = totp.now()
         dados = {'codigo': codigo_valido}
         resposta = self.cliente.post(self.url_verificar_2fa, dados, format='json')

@@ -33,7 +33,7 @@ class TesteLoginCom2FA:
 
         assert resposta.status_code == 200
         assert resposta.data.get('requer_2fa') is True
-        assert 'token_temporario' in resposta.data
+        assert 'login_2fa_token' in resposta.cookies
 
     def test_login_usuario_sem_2fa_deve_retornar_tokens_jwt_normalmente(self):
         dados = {
@@ -43,8 +43,9 @@ class TesteLoginCom2FA:
         resposta = self.cliente.post(self.url_login, dados, format='json')
 
         assert resposta.status_code == 200
-        assert 'access' in resposta.data
         assert resposta.data.get('requer_2fa', False) is False
+        assert 'access_token' in resposta.cookies
+        assert 'refresh_token' in resposta.cookies
 
 
     def test_deve_concluir_login_com_sucesso_enviando_token_temporario_e_codigo_totp(self):
@@ -54,21 +55,20 @@ class TesteLoginCom2FA:
             'password': 'SenhaSegura123'
         }
         resposta_login = self.cliente.post(self.url_login, dados_login, format='json')
-        token_temporario = resposta_login.data.get('token_temporario')
+
+        # O token temporário do 2FA vai em cookie httpOnly.
+        assert 'login_2fa_token' in resposta_login.cookies
         
-        # gera um código TOTP válido
-        totp = pyotp.TOTP(self.usuario_com_2fa.chave_secreta_2fa)
+        # gera um código TOTP válido a partir da chave plana
+        totp = pyotp.TOTP(self.usuario_com_2fa.obter_chave_2fa())
         codigo_valido = totp.now()
 
         url_concluir_login = '/api/auth/login/2fa/'
-        
-        self.cliente.credentials(HTTP_AUTHORIZATION=f'Bearer {token_temporario}')
         
         dados_verificacao = {'codigo': codigo_valido}
         resposta_final = self.cliente.post(url_concluir_login, dados_verificacao, format='json')
 
         assert resposta_final.status_code == 200
-        assert 'access' in resposta_final.data
-        assert 'refresh' in resposta_final.data
+        assert resposta_final.data['usuario']['email'] == 'com.2fa@email.com'
         assert 'access_token' in resposta_final.cookies
         assert 'refresh_token' in resposta_final.cookies
