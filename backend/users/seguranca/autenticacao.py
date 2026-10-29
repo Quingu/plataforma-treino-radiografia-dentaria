@@ -4,6 +4,7 @@ from django.conf import settings
 from django.middleware.csrf import CsrfViewMiddleware
 from rest_framework import exceptions
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
 
@@ -29,7 +30,14 @@ class AutenticacaoJWTCookie(JWTAuthentication):
         if not token:
             return None
 
-        token_validado = self.get_validated_token(token)
+        try:
+            token_validado = self.get_validated_token(token)
+        except exceptions.AuthenticationFailed:
+            # Cookie antigo, expirado ou de outra chave não pode bloquear
+            # rotas públicas (registro, login, csrf). Sem autenticação,
+            # as views protegidas continuam devolvendo 401.
+            return None
+
         if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
             exigir_csrf(request)
         return self.get_user(token_validado), token_validado
@@ -49,5 +57,9 @@ class Autenticacao2FACookie(JWTAuthentication):
         if not token:
             return None
         exigir_csrf(request)
-        token_validado = TokenTemporario2FA(token)
+        try:
+            token_validado = TokenTemporario2FA(token)
+        except TokenError:
+            # Token temporário expirado/inválido: a view protegida responde 401
+            return None
         return self.get_user(token_validado), token_validado
