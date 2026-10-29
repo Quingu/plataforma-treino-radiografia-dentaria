@@ -14,8 +14,22 @@ class SerializadorDeUsuario(serializers.ModelSerializer):
             'versao_termos', 'versao_privacidade',
         ]
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            # A unicidade do e-mail é conferida em validate(), com mensagem
+            # genérica, para não permitir enumerar contas cadastradas.
+            'email': {'validators': []},
         }
+
+    def validate(self, dados):
+        dados = super().validate(dados)
+        email = dados.get('email', '')
+
+        if email and Usuario.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError(
+                'Não foi possível concluir o cadastro com estes dados.'
+            )
+
+        return dados
 
     def validate_aceitou_termos(self, valor):
         if not valor:
