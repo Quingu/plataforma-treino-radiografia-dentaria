@@ -166,19 +166,19 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin, aoAbrir
               <div className="grid grid-cols-2 gap-3 p-1.5 bg-[#141d2b] border border-slate-800 rounded-xl">
                 <button
                   type="button"
-                  onClick={() => { setTipoUsuario('professor'); setErro(''); }}
+                  onClick={() => { setTipoUsuario('aluno'); setErro(''); }}
                   disabled={carregando}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 ${tipoUsuario === 'professor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${tipoUsuario === 'aluno' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
                 >
-                  Professor
+                  <span>Sou Aluno</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setTipoUsuario('aluno'); setErro(''); }}
+                  onClick={() => { setTipoUsuario('professor'); setErro(''); }}
                   disabled={carregando}
-                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 ${tipoUsuario === 'aluno' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  className={`py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${tipoUsuario === 'professor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
                 >
-                  Aluno
+                  <span>Sou Professor</span>
                 </button>
               </div>
 
