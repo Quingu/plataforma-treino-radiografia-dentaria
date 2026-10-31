@@ -5,8 +5,11 @@ import BotaoOlhoSenha from '../componentes/BotaoOlhoSenha';
 import { validarEmailPorPerfil } from '../utils/validacao';
 import { cadastrarUsuario, loginUsuario } from '../services/api';
 
-export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro, aoAbrirPrivacidade }) {
-  const [tipoUsuario, setTipoUsuario] = useState('aluno');
+export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro, aoAbrirPrivacidade, tipoInicial }) {
+  // Herda o perfil escolhido no login; sem ele, o padrão continua sendo aluno.
+  const [tipoUsuario, setTipoUsuario] = useState(
+    tipoInicial === 'professor' ? 'professor' : 'aluno',
+  );
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -130,6 +133,12 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro, a
             <p className="text-slate-400 text-sm">
               Escolha seu perfil e preencha os dados abaixo
             </p>
+            <p className="text-xs text-slate-300 mt-2">
+              Perfil selecionado:{' '}
+              <strong className="text-blue-400">
+                {tipoUsuario === 'professor' ? 'Professor' : 'Aluno'}
+              </strong>
+            </p>
           </div>
 
           {erro && (
@@ -241,7 +250,11 @@ export default function TelaCadastro({ aoNavegarParaLogin, aoConcluirCadastro, a
                       <span>Processando...</span>
                     </>
                   ) : (
-                    <span>Concluir Cadastro</span>
+                    <span>
+                      {tipoUsuario === 'professor'
+                        ? 'Concluir Cadastro como Professor'
+                        : 'Concluir Cadastro como Aluno'}
+                    </span>
                   )}
                 </button>
           </form>

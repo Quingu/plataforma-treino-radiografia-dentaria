@@ -26,6 +26,8 @@ export default function App() {
   const [usuario, setUsuario] = useState(() => buscarUsuarioSalvo());
   const [telaAtual, setTelaAtual] = useState(telaInicial);
   const [origemPrivacidade, setOrigemPrivacidade] = useState(null);
+  // Guarda o perfil escolhido no login para abrir o cadastro já nele.
+  const [tipoCadastro, setTipoCadastro] = useState('aluno');
 
   // Sincroniza a tela com a URL (navegação do navegador e acesso direto).
   useEffect(() => {
@@ -93,7 +95,10 @@ export default function App() {
     <div className="min-h-screen bg-[#0d131d] text-white">
       {telaAtual === 'LOGIN' && (
         <TelaLogin
-          aoNavegarParaCadastro={() => setTelaAtual('CADASTRO')}
+          aoNavegarParaCadastro={(tipo) => {
+            setTipoCadastro(tipo === 'professor' ? 'professor' : 'aluno');
+            setTelaAtual('CADASTRO');
+          }}
           aoFazerLogin={handleLoginSucesso}
           aoAbrirPrivacidade={irParaPrivacidade}
         />
@@ -104,6 +109,7 @@ export default function App() {
           aoNavegarParaLogin={() => setTelaAtual('LOGIN')}
           aoConcluirCadastro={handleLoginSucesso}
           aoAbrirPrivacidade={irParaPrivacidade}
+          tipoInicial={tipoCadastro}
         />
       )}
 

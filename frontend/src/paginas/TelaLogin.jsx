@@ -282,7 +282,7 @@ export default function TelaLogin({ aoNavegarParaCadastro, aoFazerLogin, aoAbrir
           <div className="pt-6 border-t border-slate-800 text-center text-sm text-slate-400">
             Ainda não tem uma conta?{" "}
             <button
-              onClick={aoNavegarParaCadastro}
+              onClick={() => aoNavegarParaCadastro(tipoUsuario)}
               className="text-blue-400 font-semibold hover:text-blue-300 hover:underline cursor-pointer transition-colors"
             >
               Cadastre-se
