@@ -22,3 +22,8 @@ python manage.py criar_superusuario
 
 echo "Importando modelos 3D do Scaleway..."
 python manage.py importar_modelos_3d_scaleway
+
+# Reimporta as radiografias institucionais (pasta radiografias/ do bucket).
+# O comando e idempotente: so cria casos que ainda nao existem no banco.
+echo "Importando radiografias 2D do Scaleway..."
+python manage.py importar_biblioteca_scaleway || echo "Aviso: nao foi possivel importar a biblioteca 2D."
