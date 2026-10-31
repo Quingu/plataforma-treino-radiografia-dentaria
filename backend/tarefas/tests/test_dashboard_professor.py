@@ -324,7 +324,7 @@ class TesteDashboardProfessor:
     def test_resposta_nao_expoe_gabarito_nem_coordenadas(self):
         resposta = self._obter()
 
-        conteudo = json.dumps(resposta.data)
+        conteudo = json.dumps(resposta.data, default=str)
         assert 'gabarito' not in conteudo
         assert 'coordenadas' not in conteudo
         assert 'x_min' not in conteudo

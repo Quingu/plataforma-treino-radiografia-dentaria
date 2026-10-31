@@ -1,4 +1,5 @@
 from datetime import date, datetime, time, timedelta
+import uuid
 
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate, TruncMonth, TruncWeek
@@ -41,14 +42,9 @@ def _ler_data(valor, campo, padrao=None):
 
 def _ler_id(valor, campo):
     try:
-        numero = int(valor)
-    except (TypeError, ValueError):
+        return uuid.UUID(str(valor))
+    except (TypeError, ValueError, AttributeError):
         raise FiltroInvalido(f'{campo}: identificador inválido.')
-
-    if numero <= 0:
-        raise FiltroInvalido(f'{campo}: identificador inválido.')
-
-    return numero
 
 
 def _ler_inteiro(valor, campo, padrao, minimo, maximo):

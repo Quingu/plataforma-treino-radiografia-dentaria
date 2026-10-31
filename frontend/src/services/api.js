@@ -12,6 +12,12 @@ function salvarUsuario(usuario) {
   localStorage.setItem('radiodent_usuario', JSON.stringify(usuario));
 }
 
+const PADRAO_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function ehIdUuid(valor) {
+  return typeof valor === 'string' && PADRAO_UUID.test(valor);
+}
+
 function buscarUsuarioSalvo() {
   const usuario = localStorage.getItem('radiodent_usuario');
 
@@ -20,7 +26,16 @@ function buscarUsuarioSalvo() {
   }
 
   try {
-    return JSON.parse(usuario);
+    const dados = JSON.parse(usuario);
+
+    // Sessões salvas antes da migração para UUID guardavam um id numérico.
+    // O backend não reconhece mais esse id, então a sessão é descartada.
+    if (!dados || !ehIdUuid(dados.id)) {
+      limparTokens();
+      return null;
+    }
+
+    return dados;
   } catch {
     limparTokens();
     return null;

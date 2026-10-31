@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import pyotp 
+import uuid
 from users.seguranca.segredos import criptografar_segredo, descriptografar_segredo
 
 class UsuarioGerenciador(BaseUserManager):
@@ -19,6 +20,8 @@ class UsuarioGerenciador(BaseUserManager):
         return self.create_user(email, password, **campos_extras)
 
 class Usuario(AbstractUser):
+    # Chave primária UUID: impede enumerar contas e dificulta ataques de IDOR.
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     email = models.EmailField(unique=True, verbose_name='E-mail')
     
