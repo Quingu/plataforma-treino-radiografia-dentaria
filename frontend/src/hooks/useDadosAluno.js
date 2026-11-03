@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { entrarTurmaComCodigo, listarTarefas, listarTurmas, obterMeuPerfilGamificacao } from '../services/api';
+import { precarregarImagensDasTarefas } from '../utils/precarregarImagem';
 
 const normalizarTurma = (turma) => ({
   ...turma,
@@ -28,6 +29,10 @@ export default function useDadosAluno() {
       ]);
       setTurmas(ts.map(normalizarTurma));
       setTarefas(trs);
+
+      // As URLs assinadas chegam junto com a lista; aproveitamos para baixar
+      // as radiografias mais prováveis antes de o aluno clicar na tarefa.
+      precarregarImagensDasTarefas(trs);
     } catch (e) {
       setErro(e.message || 'Não foi possível carregar seus dados.');
     } finally {
@@ -93,7 +98,9 @@ export default function useDadosAluno() {
         ? prev 
         : [normalizarTurma(turma), ...prev]
     );
-    setTarefas(await listarTarefas());
+    const tarefasAtualizadas = await listarTarefas();
+    setTarefas(tarefasAtualizadas);
+    precarregarImagensDasTarefas(tarefasAtualizadas);
   };
 
   return {

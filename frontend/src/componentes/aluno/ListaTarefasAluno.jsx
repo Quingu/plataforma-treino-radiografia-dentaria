@@ -1,4 +1,5 @@
 import TabelaVazia from '../comum/TabelaVazia';
+import { precarregarImagemDaTarefa } from '../../utils/precarregarImagem';
 
 export default function ListaTarefasAluno({
   busca,
@@ -63,6 +64,11 @@ export default function ListaTarefasAluno({
                 key={tarefa.id}
                 type="button"
                 onClick={() => aoAbrir(tarefa)}
+                // Antecipa o download da radiografia quando o aluno demonstra
+                // interesse no card (mouse, foco pelo teclado ou toque).
+                onMouseEnter={() => precarregarImagemDaTarefa(tarefa)}
+                onFocus={() => precarregarImagemDaTarefa(tarefa)}
+                onTouchStart={() => precarregarImagemDaTarefa(tarefa)}
                 className="overflow-hidden rounded-2xl border text-left bg-[#0b1019] border-slate-800 hover:border-blue-500 cursor-pointer"
               >
                 <div className="p-4 flex justify-between">

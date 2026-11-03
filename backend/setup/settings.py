@@ -66,7 +66,10 @@ STORAGES = {
             "region_name": config('SCALEWAY_REGION'),
             "default_acl": None,
             "querystring_auth": True,
-            "querystring_expire": 300,
+            # 1 hora: o aluno costuma abrir a tarefa depois de navegar pelo
+            # painel. Com 5 minutos o link assinado expirava e a imagem
+            # falhava ao carregar.
+            "querystring_expire": 3600,
         },
     },
     "staticfiles": {

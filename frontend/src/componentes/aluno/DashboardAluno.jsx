@@ -2,6 +2,7 @@ import CartaoMetrica from '../comum/CartaoMetrica';
 import TabelaVazia from '../comum/TabelaVazia';
 import PainelRankingAluno from './PainelRankingAluno';
 import { formatarData } from '../../utils/formatadores';
+import { precarregarImagemDaTarefa } from '../../utils/precarregarImagem';
 
 export default function DashboardAluno({
   nome,
@@ -51,6 +52,9 @@ export default function DashboardAluno({
                 key={tarefa.id}
                 type="button"
                 onClick={() => aoAbrirTarefa(tarefa)}
+                onMouseEnter={() => precarregarImagemDaTarefa(tarefa)}
+                onFocus={() => precarregarImagemDaTarefa(tarefa)}
+                onTouchStart={() => precarregarImagemDaTarefa(tarefa)}
                 className="w-full flex justify-between text-left border-b border-slate-800 pb-3 cursor-pointer"
               >
                 <span className="text-sm text-white">
