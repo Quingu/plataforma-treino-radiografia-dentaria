@@ -5,6 +5,9 @@ import re
 class SerializadorSolicitacaoRecuperacao(serializers.Serializer):
     email = serializers.EmailField()
 
+    def validate_email(self, valor):
+        return (valor or '').strip().lower()
+
 class SerializadorRedefinicaoSenha(serializers.Serializer):
     token = serializers.UUIDField()
     nova_password = serializers.CharField(write_only=True, min_length=8)

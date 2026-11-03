@@ -23,7 +23,7 @@ class SolicitarRecuperacaoSenhaView(APIView):
             email = serializador.validated_data['email']
             
             try:
-                usuario = Usuario.objects.get(email=email)
+                usuario = Usuario.objects.get(email__iexact=email)
                 novo_token = TokenDeRecuperacao.objects.create(usuario=usuario)
                 
                 link_recuperacao = f"{settings.FRONTEND_URL}/recuperar-senha?token={novo_token.token}"

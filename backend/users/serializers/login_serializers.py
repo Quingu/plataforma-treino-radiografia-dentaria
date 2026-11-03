@@ -1,5 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from users.models.usuario import normalizar_email
 from users.seguranca.autenticacao import TokenTemporario2FA
 
 
@@ -9,6 +10,8 @@ class SerializadorLoginCom2FA(TokenObtainPairSerializer):
         return super().get_token(user)
 
     def validate(self, attrs):
+        # O e-mail é único sem diferenciar caixa: aceita como o aluno digitar.
+        attrs['email'] = normalizar_email(attrs.get('email'))
         dados = super().validate(attrs)
         usuario = self.user
 

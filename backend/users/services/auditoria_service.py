@@ -25,7 +25,7 @@ def registrar_acesso(requisicao, evento, usuario=None, usuario_id=None, email=''
     return LogAcesso.objects.create(
         usuario=usuario,
         usuario_id=usuario_id,
-        email_informado=email[:254],
+        email_informado=(email or '').strip().lower()[:254],
         evento=evento,
         recurso=recurso[:120],
         ip_hash=ip_hash,

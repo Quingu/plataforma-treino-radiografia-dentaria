@@ -4,11 +4,21 @@ import pyotp
 import uuid
 from users.seguranca.segredos import criptografar_segredo, descriptografar_segredo
 
+def normalizar_email(email):
+    """E-mail sempre gravado em minúsculas e sem espaços nas pontas."""
+    return (email or '').strip().lower()
+
+
 class UsuarioGerenciador(BaseUserManager):
+    def get_by_natural_key(self, username):
+        # O login procura o e-mail sem diferenciar maiúsculas de minúsculas,
+        # então o aluno pode digitar Aluno@Email.com ou aluno@email.com.
+        return self.get(**{f'{self.model.USERNAME_FIELD}__iexact': normalizar_email(username)})
+
     def create_user(self, email, password=None, **campos_extras):
         if not email:
             raise ValueError('O campo de e-mail é obrigatório')
-        email = self.normalize_email(email)
+        email = normalizar_email(email)
         usuario = self.model(email=email, **campos_extras)
         usuario.set_password(password)
         usuario.save(using=self._db)
@@ -65,6 +75,20 @@ class Usuario(AbstractUser):
 
     def __str__(self):
         return f"{self.email} - {self.get_perfil_display()}"
+
+    def save(self, *args, **kwargs):
+        # Garante minúsculas mesmo em cadastros feitos fora do create_user
+        # (admin, importações, comandos).
+        email_normalizado = normalizar_email(self.email)
+
+        if email_normalizado != self.email:
+            self.email = email_normalizado
+
+            campos_atualizados = kwargs.get('update_fields')
+            if campos_atualizados is not None and 'email' not in campos_atualizados:
+                kwargs['update_fields'] = [*campos_atualizados, 'email']
+
+        super().save(*args, **kwargs)
     
     @property
     def eh_professor(self):

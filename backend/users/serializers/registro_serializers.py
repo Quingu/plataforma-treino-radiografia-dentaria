@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import ConsentimentoTermos, Usuario
+from users.models.usuario import normalizar_email
 
 class SerializadorDeUsuario(serializers.ModelSerializer):
     tipo = serializers.CharField(write_only=True, required=False)
@@ -19,6 +20,11 @@ class SerializadorDeUsuario(serializers.ModelSerializer):
             # genérica, para não permitir enumerar contas cadastradas.
             'email': {'validators': []},
         }
+
+    def validate_email(self, valor):
+        # Guarda sempre em minúsculas; a checagem de duplicidade abaixo já é
+        # feita sem diferenciar caixa.
+        return normalizar_email(valor)
 
     def validate(self, dados):
         dados = super().validate(dados)
