@@ -20,6 +20,9 @@ python manage.py migrate
 echo "Verificando superusuario do admin..."
 python manage.py criar_superusuario
 
+echo "Criando alunos de demonstracao na turma 42FCVV..."
+python manage.py criar_alunos_demo || echo "Aviso: nao foi possivel criar os alunos de demonstracao."
+
 echo "Importando modelos 3D do Scaleway..."
 python manage.py importar_modelos_3d_scaleway
 
