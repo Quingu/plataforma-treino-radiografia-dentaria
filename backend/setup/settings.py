@@ -221,6 +221,9 @@ BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@radiodent.com")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://radiodent-pfc.vercel.app")
 
+VERSAO_TERMOS = os.getenv("VERSAO_TERMOS", "1.0")
+VERSAO_PRIVACIDADE = os.getenv("VERSAO_PRIVACIDADE", "1.0")
+
 
 
 SCALEWAY_BIBLIOTECA_PUBLICA_PREFIX = os.getenv(

@@ -266,6 +266,17 @@ export async function solicitarDireitoTitular(tipo, descricao = '') {
   });
 }
 
+export async function obterTermos() {
+  return requisicaoAutenticada('/auth/termos/');
+}
+
+export async function aceitarTermos() {
+  return requisicaoAutenticada('/auth/termos/', {
+    method: 'POST',
+    body: JSON.stringify({ aceitou_termos: true }),
+  });
+}
+
 export async function configurar2FA() {
   return requisicaoAutenticada('/auth/2fa/configurar/', {
     method: 'POST',

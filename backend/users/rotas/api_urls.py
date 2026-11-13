@@ -7,6 +7,7 @@ from users.views.autenticacao_views import (
     AtualizarTokenCookieView, ConcluirLogin2FAView, CSRFView, LogoutView, VisaoLoginProtegido,
 )
 from users.views.direitos_titular_views import ExportarMeusDadosView, SolicitarDireitoTitularView
+from users.views.termos_views import TermosDeUsoView
 
 urlpatterns = [
     path('registro/', RegistroDeUsuarioView.as_view(), name='registro-de-usuario'),
@@ -22,4 +23,5 @@ urlpatterns = [
     path('perfil/', PerfilUsuarioView.as_view(), name='perfil-usuario'),
     path('dados/exportar/', ExportarMeusDadosView.as_view(), name='exportar-meus-dados'),
     path('dados/solicitacoes/', SolicitarDireitoTitularView.as_view(), name='solicitar-direito-titular'),
+    path('termos/', TermosDeUsoView.as_view(), name='termos-de-uso'),
 ]

@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 from users.models import ConsentimentoTermos, Usuario
 from users.models.usuario import normalizar_email
@@ -5,8 +6,8 @@ from users.models.usuario import normalizar_email
 class SerializadorDeUsuario(serializers.ModelSerializer):
     tipo = serializers.CharField(write_only=True, required=False)
     aceitou_termos = serializers.BooleanField(write_only=True)
-    versao_termos = serializers.CharField(write_only=True, default='1.0')
-    versao_privacidade = serializers.CharField(write_only=True, default='1.0')
+    versao_termos = serializers.CharField(write_only=True, required=False)
+    versao_privacidade = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Usuario
@@ -47,8 +48,8 @@ class SerializadorDeUsuario(serializers.ModelSerializer):
     def create(self, dados_validados):
         perfil_selecionado = dados_validados.pop('tipo', 'aluno')
         dados_validados.pop('aceitou_termos')
-        versao_termos = dados_validados.pop('versao_termos')
-        versao_privacidade = dados_validados.pop('versao_privacidade')
+        dados_validados.pop('versao_termos', None)
+        dados_validados.pop('versao_privacidade', None)
         
         novo_usuario = Usuario.objects.create_user(
             email=dados_validados['email'],
@@ -58,7 +59,7 @@ class SerializadorDeUsuario(serializers.ModelSerializer):
         )
         ConsentimentoTermos.objects.create(
             usuario=novo_usuario,
-            versao_termos=versao_termos,
-            versao_privacidade=versao_privacidade,
+            versao_termos=settings.VERSAO_TERMOS,
+            versao_privacidade=settings.VERSAO_PRIVACIDADE,
         )
         return novo_usuario

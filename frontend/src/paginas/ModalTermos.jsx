@@ -1,16 +1,22 @@
 import React from 'react';
 
-export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false }) {
+export default function ModalTermos({
+  aoFechar,
+  aoAceitar,
+  modoAceite = false,
+  versao = '1.0',
+  processando = false,
+  erro = '',
+}) {
 
   const lidarComAceite = () => {
     if (aoAceitar) {
       aoAceitar({
         aceito: true,
         dataConsentimento: new Date().toISOString(),
-        versaoTermos: '1.0'
+        versaoTermos: versao
       });
     }
-    aoFechar();
   };
 
   return (
@@ -24,19 +30,27 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
             <p className="text-xs text-slate-400">Conformidade LGPD (Lei nº 13.709/2018)</p>
           </div>
           
-          <button 
-            onClick={aoFechar}
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-800 text-lg leading-none"
-            title="Fechar"
-          >
-            x
-          </button>
+          {!modoAceite && (
+            <button 
+              onClick={aoFechar}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-800 text-lg leading-none"
+              title="Fechar"
+            >
+              x
+            </button>
+          )}
         </div>
+
+        {erro && (
+          <div className="mx-6 mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {erro}
+          </div>
+        )}
 
         <div className="p-6 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed custom-scrollbar">
           
           <p className="text-slate-400 italic text-xs border-l-2 border-blue-500 pl-3 py-1">
-            Versão: 1.0 - 22/09/2026<br/>
+            Versão: {versao} - 22/09/2026<br/>
             O <strong>RadioDent</strong> é uma plataforma acadêmica de treino radiográfico. O seu uso requer o consentimento explícito das condições e políticas descritas abaixo.
           </p>
 
@@ -93,15 +107,17 @@ export default function ModalTermos({ aoFechar, aoAceitar, modoAceite = false })
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
               <button 
                 onClick={aoFechar}
-                className="px-4 py-2.5 text-slate-400 hover:text-white font-medium rounded-lg text-sm transition-colors cursor-pointer"
+                disabled={processando}
+                className="px-4 py-2.5 text-slate-400 hover:text-white font-medium rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 Recusar
               </button>
               <button 
                 onClick={lidarComAceite}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition-all cursor-pointer shadow-lg shadow-blue-600/20 active:scale-[0.98]"
+                disabled={processando}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition-all cursor-pointer shadow-lg shadow-blue-600/20 active:scale-[0.98] disabled:opacity-50"
               >
-                Concordo e Aceito
+                {processando ? 'Registrando...' : 'Concordo e Aceito'}
               </button>
             </div>
           ) : (

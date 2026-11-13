@@ -5,10 +5,13 @@ import TelaConfigurar2FA from './paginas/TelaConfigurar2FA';
 import TelaPrivacidade from './paginas/TelaPrivacidade';
 import HomeAluno from './paginas/HomeAluno';
 import HomeProfessor from './paginas/HomeProfessor';
+import ModalTermos from './paginas/ModalTermos';
 import {
+  aceitarTermos,
   buscarUsuarioSalvo,
   logoutUsuario,
   marcar2FAPendente,
+  obterTermos,
   salvarUsuario,
   tem2FAPendente,
   temSessaoSalva,
@@ -28,6 +31,10 @@ export default function App() {
   const [origemPrivacidade, setOrigemPrivacidade] = useState(null);
   // Guarda o perfil escolhido no login para abrir o cadastro já nele.
   const [tipoCadastro, setTipoCadastro] = useState('aluno');
+  const [termosInfo, setTermosInfo] = useState(null);
+  const [aceitePendente, setAceitePendente] = useState(false);
+  const [processandoAceite, setProcessandoAceite] = useState(false);
+  const [erroTermos, setErroTermos] = useState('');
 
   // Sincroniza a tela com a URL (navegação do navegador e acesso direto).
   useEffect(() => {
@@ -44,6 +51,26 @@ export default function App() {
     window.addEventListener('popstate', sincronizarComUrl);
     return () => window.removeEventListener('popstate', sincronizarComUrl);
   }, []);
+
+  useEffect(() => {
+    if (!usuario || telaAtual !== 'HOME') {
+      return undefined;
+    }
+
+    let ativo = true;
+
+    obterTermos()
+      .then((dados) => {
+        if (!ativo) return;
+        setTermosInfo(dados);
+        setAceitePendente(Boolean(dados.aceite_pendente));
+      })
+      .catch(() => {});
+
+    return () => {
+      ativo = false;
+    };
+  }, [usuario, telaAtual]);
 
   const irParaPrivacidade = () => {
     setOrigemPrivacidade((origem) =>
@@ -75,6 +102,8 @@ export default function App() {
     salvarUsuario(usuarioLogado);
     marcar2FAPendente(Boolean(dadosLogin.requerConfiguracao2FA));
     setUsuario(usuarioLogado);
+    setAceitePendente(false);
+    setErroTermos('');
     setTelaAtual(dadosLogin.requerConfiguracao2FA ? 'CONFIGURAR_2FA' : 'HOME');
   };
 
@@ -82,11 +111,29 @@ export default function App() {
     await logoutUsuario();
     setUsuario(null);
     setTelaAtual('LOGIN');
+    setAceitePendente(false);
+    setTermosInfo(null);
+    setErroTermos('');
   };
 
   const handle2FAConfigurado = () => {
     marcar2FAPendente(false);
     setTelaAtual('HOME');
+  };
+
+  const handleAceitarTermos = async () => {
+    setErroTermos('');
+    setProcessandoAceite(true);
+
+    try {
+      const dados = await aceitarTermos();
+      setTermosInfo(dados);
+      setAceitePendente(false);
+    } catch (erro) {
+      setErroTermos(erro.message);
+    } finally {
+      setProcessandoAceite(false);
+    }
   };
 
   const perfilUsuario = String(usuario?.perfil || usuario?.tipoUsuario || '').toLowerCase();
@@ -142,6 +189,17 @@ export default function App() {
             aoIrParaPrivacidade={irParaPrivacidade}
           />
         )
+      )}
+
+      {aceitePendente && usuario && (
+        <ModalTermos
+          modoAceite
+          versao={termosInfo?.versao_termos || '1.0'}
+          erro={erroTermos}
+          processando={processandoAceite}
+          aoAceitar={handleAceitarTermos}
+          aoFechar={handleSair}
+        />
       )}
     </div>
   );

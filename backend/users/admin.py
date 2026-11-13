@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from users.models import ConsentimentoTermos, LogAcesso, SolicitacaoDireitoTitular
 from users.models.usuario import Usuario
+from users.services.termos_service import versoes_atuais
 
 
 class _SomenteLeituraMixin:
@@ -132,11 +133,33 @@ class SolicitacaoDireitoTitularAdmin(admin.ModelAdmin):
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ("email", "nome", "perfil", "is_active", "is_staff", "date_joined")
+    list_display = ("email", "nome", "perfil", "termos", "is_active", "is_staff", "date_joined")
     list_filter = ("perfil", "is_active", "is_staff")
     search_fields = ("email", "nome")
     ordering = ("email",)
     actions = None
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("consentimentos")
+
+    @admin.display(description="Termos")
+    def termos(self, obj):
+        atuais = versoes_atuais()
+        vigentes = [c for c in obj.consentimentos.all() if c.revogado_em is None]
+
+        if not vigentes:
+            return "Não aceitou"
+
+        consentimento = max(vigentes, key=lambda c: c.aceito_em)
+        pendente = (
+            consentimento.versao_termos != atuais['termos']
+            or consentimento.versao_privacidade != atuais['privacidade']
+        )
+
+        if pendente:
+            return f"{consentimento.versao_termos} (re-aceite pendente)"
+
+        return consentimento.versao_termos
 
 
     readonly_fields = (
