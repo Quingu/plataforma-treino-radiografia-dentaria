@@ -2,8 +2,10 @@ import os
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Sum
 
-from ranking.models import PerfilGamificacao
+from ranking.models import PerfilGamificacao, RegistroXP
+from tarefas.models import ResolucaoTarefa, Tarefa
 from turmas.models import Turma
 from users.models import Usuario
 from users.services.termos_service import aceite_pendente, registrar_aceite
@@ -11,6 +13,8 @@ from users.services.termos_service import aceite_pendente, registrar_aceite
 CODIGO_PADRAO = '42FCVV'
 SENHA_PADRAO = 'RadioDent#2026'
 DOMINIO_PADRAO = 'example.com'
+RESOLUCOES_POR_ALUNO = 6
+TAREFAS_DEMO_MAXIMO = 7
 
 ALUNOS = [
     ('Ana Beatriz Souza', 120),
@@ -79,8 +83,22 @@ class Command(BaseCommand):
             )
             return
 
+        tarefas = list(
+            Tarefa.objects.filter(turma=turma)
+            .order_by('criado_em', 'id')[:TAREFAS_DEMO_MAXIMO]
+        )
+
+        if len(tarefas) < RESOLUCOES_POR_ALUNO:
+            self.stderr.write(
+                self.style.WARNING(
+                    f'Turma {codigo} possui {len(tarefas)} tarefas; '
+                    f'o seed completo exige {RESOLUCOES_POR_ALUNO}.'
+                )
+            )
+
         criados = 0
         atualizados = 0
+        resolucoes_criadas = 0
 
         for indice, (nome, xp) in enumerate(ALUNOS, start=1):
             email = f'aluno.demo{indice:02d}@{dominio}'
@@ -103,16 +121,54 @@ class Command(BaseCommand):
             if aceite_pendente(usuario):
                 registrar_aceite(usuario)
 
-            PerfilGamificacao.objects.update_or_create(
-                aluno=usuario,
-                defaults={'xp_total': xp},
+            turma.alunos.add(usuario)
+
+            quantidade = RESOLUCOES_POR_ALUNO + (1 if indice % 3 == 0 else 0)
+
+            for posicao, tarefa in enumerate(tarefas[:quantidade]):
+                resolucao = (
+                    ResolucaoTarefa.objects.filter(
+                        aluno=usuario, tarefa=tarefa
+                    )
+                    .order_by('criado_em')
+                    .first()
+                )
+
+                if resolucao is None:
+                    resolucao = ResolucaoTarefa.objects.create(
+                        aluno=usuario,
+                        tarefa=tarefa,
+                        coordenadas_submetidas={},
+                        acertou=(indice - 1 + posicao) % 4 != 0,
+                    )
+                    resolucoes_criadas += 1
+
+                if resolucao.acertou:
+                    RegistroXP.objects.get_or_create(
+                        aluno=usuario,
+                        tarefa=tarefa,
+                        defaults={
+                            'resolucao': resolucao,
+                            'xp_concedido': PerfilGamificacao.XP_POR_ACERTO,
+                        },
+                    )
+
+            bonus = (
+                RegistroXP.objects.filter(aluno=usuario).aggregate(
+                    total=Sum('xp_concedido')
+                )['total']
+                or 0
             )
 
-            turma.alunos.add(usuario)
+            PerfilGamificacao.objects.update_or_create(
+                aluno=usuario,
+                defaults={'xp_total': xp + bonus},
+            )
 
         self.stdout.write(
             self.style.SUCCESS(
                 f'Turma {codigo}: {criados} criados, '
-                f'{atualizados} atualizados, {len(ALUNOS)} no total.'
+                f'{atualizados} atualizados, {len(ALUNOS)} no total, '
+                f'{resolucoes_criadas} resolucoes criadas.'
             )
         )
